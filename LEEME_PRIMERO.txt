@@ -1,0 +1,184 @@
+===============================================================================
+  SISTEMA DE GESTION DE FARMACIA EN LINEA
+  Evidencia GA7-220501096-AA2-EV01. Codificacion de modulos del software
+
+  COMO EJECUTAR EL PROYECTO
+===============================================================================
+
+Aplicacion web Java con los 13 modulos derivados del modelo relacional, mas un
+tablero de gestion. Construida con Servlets, JSP y JDBC sobre una arquitectura
+de tres capas: IGU, Logica y Persistencia.
+
+El codigo fuente esta en la carpeta FarmaWeb.
+La version previa del modulo de medicamentos en Node.js se conserva en la raiz
+(script.js, config, controllers, public) como evidencia del avance anterior.
+
+
+-------------------------------------------------------------------------------
+  QUE NECESITA INSTALADO
+-------------------------------------------------------------------------------
+
+  1. JDK 17 o superior          https://adoptium.net/temurin/releases/
+  2. Apache Maven 3.9 o superior  https://maven.apache.org/download.cgi
+  3. MySQL o MariaDB en ejecucion (XAMPP funciona sin ajustes)
+  4. Conexion a internet la primera vez que se ejecute Maven
+
+Verifique la instalacion en una terminal NUEVA:
+
+      java -version
+      mvn -v
+
+Si Maven reclama la variable JAVA_HOME, definala apuntando a la carpeta del JDK.
+
+
+-------------------------------------------------------------------------------
+  PASO 1. INICIAR LA BASE DE DATOS
+-------------------------------------------------------------------------------
+
+Abra el panel de control de XAMPP y pulse Start en la fila MySQL.
+
+
+-------------------------------------------------------------------------------
+  PASO 2. CREAR LA BASE DE DATOS CON DATOS DE PRUEBA
+-------------------------------------------------------------------------------
+
+Opcion A, por consola:
+
+      C:\xampp\mysql\bin\mysql.exe -u root < FarmaWeb\src\main\resources\sql\bd_farmacia_completa.sql
+
+Opcion B, por phpMyAdmin:
+
+      Abra http://localhost/phpmyadmin
+      Vaya a la pestana SQL
+      Pegue el contenido del archivo:
+          FarmaWeb\src\main\resources\sql\bd_farmacia_completa.sql
+      Ejecute
+
+El script crea la base bd_farmacia con sus 13 tablas y carga datos de prueba.
+Al terminar muestra una tabla con el conteo de registros de cada tabla.
+
+IMPORTANTE: el script comienza con DROP DATABASE IF EXISTS bd_farmacia.
+Si ya existe una base con ese nombre, sus datos se reemplazan.
+
+
+-------------------------------------------------------------------------------
+  PASO 3. AJUSTAR LA CONEXION SOLO SI ES NECESARIO
+-------------------------------------------------------------------------------
+
+El archivo:
+
+      FarmaWeb\src\main\resources\db.properties
+
+viene configurado con el usuario root sin contrasena, que es el valor por
+defecto de XAMPP. Si su MySQL tiene contrasena, escribala en la linea:
+
+      farmacia.db.password=
+
+
+-------------------------------------------------------------------------------
+  PASO 4. COMPILAR Y EJECUTAR
+-------------------------------------------------------------------------------
+
+      cd FarmaWeb
+      mvn clean package
+      mvn cargo:run
+
+Maven descarga Tomcat 10.1 automaticamente. No hace falta instalarlo aparte.
+La primera ejecucion tarda unos minutos porque baja las dependencias.
+
+Espere a que aparezca en la terminal:
+
+      Tomcat 10.1.30 started on port [8080]
+
+Para detener el servidor: Ctrl+C en esa terminal.
+
+
+-------------------------------------------------------------------------------
+  PASO 5. ABRIR LA APLICACION
+-------------------------------------------------------------------------------
+
+      http://localhost:8080/farmaweb
+
+  Usuarios de prueba:
+
+      Administrador   admin@farmacia.com          admin123
+      Farmaceutico    carlos.ruiz@farmacia.com    farma123
+      Cliente         laura.gomez@correo.com      cliente123
+
+Las contrasenas se almacenan cifradas con SHA-256, nunca en texto plano.
+
+
+-------------------------------------------------------------------------------
+  ALTERNATIVA SIN COMPILAR
+-------------------------------------------------------------------------------
+
+En la raiz de este paquete se incluye el archivo ya compilado:
+
+      farmaweb.war
+
+Si prefiere no usar Maven, copie ese archivo a la carpeta webapps de un
+Apache Tomcat 10.1 instalado y abra http://localhost:8080/farmaweb
+De todas formas debe realizar antes los pasos 1 y 2.
+
+
+-------------------------------------------------------------------------------
+  ADVERTENCIA SOBRE EL SISTEMA OPERATIVO
+-------------------------------------------------------------------------------
+
+La ejecucion con Maven esta configurada para Windows. El archivo
+FarmaWeb\pom.xml instala y ejecuta Tomcat en la ruta C:\farmaweb-servidor
+porque la carpeta original del proyecto contiene tildes y guiones especiales
+que corrompen la linea de comandos con que se lanza el servidor.
+
+En Linux o macOS esa ruta no existe. En ese caso, use el archivo farmaweb.war
+sobre un Tomcat 10.1 instalado, o cambie el valor de la propiedad dir.tomcat
+en FarmaWeb\pom.xml por una ruta valida del sistema.
+
+Se recomienda descomprimir este paquete en una ruta corta y sin tildes,
+por ejemplo C:\ModuloFarma
+
+
+-------------------------------------------------------------------------------
+  LOS 13 MODULOS Y SU TABLA
+-------------------------------------------------------------------------------
+
+      Roles                  /roles           TblRol
+      Usuarios               /usuarios        TblUsuario
+      Clientes               /clientes        TblCliente
+      Farmaceuticos          /farmaceuticos   TblFarmaceutico
+      Productos              /productos       TblProducto
+      Inventario por lotes   /lotes           TblLoteProducto
+      Favoritos              /favoritos       TblFavorito
+      Pedidos                /pedidos         TblPedido
+      Detalle de pedidos     /lineas          TblLineaPedido
+      Formulas medicas       /formulas        TblFormulaMedica
+      Historial              /historial       TblHistorial
+      Pasarelas de pago      /pasarelas       TblPasarelaPago
+      Transacciones          /transacciones   TblTransaccionPago
+
+Mas el tablero de gestion en /panel, que reune los indicadores del sistema.
+
+
+-------------------------------------------------------------------------------
+  VERSIONAMIENTO
+-------------------------------------------------------------------------------
+
+El paquete incluye el repositorio Git con el historial completo del desarrollo.
+Para consultarlo, desde la raiz del proyecto:
+
+      git log --pretty=format:"%h  %ad  %an  %s" --date=short
+
+Repositorio remoto:
+
+      https://github.com/brujildavane-web/Farmacia-Modulo-Medicamentos
+
+
+-------------------------------------------------------------------------------
+  DOCUMENTACION AMPLIADA
+-------------------------------------------------------------------------------
+
+      README.md              Descripcion general del repositorio
+      FarmaWeb\README.md     Detalle tecnico, arquitectura, reglas de negocio
+                             e identidad visual del sistema
+
+===============================================================================
