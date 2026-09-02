@@ -63,14 +63,22 @@ CREATE TABLE TblCliente (
         REFERENCES TblUsuario(Usu_IdUsuario) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Catalogo de medicamentos y productos
+-- Catalogo de medicamentos y productos.
+--
+-- Las columnas Pro_Categoria y Pro_Imagen se agregaron para dar soporte a la
+-- tienda publica: la categoria permite navegar el catalogo por secciones y la
+-- imagen guarda el nombre del archivo ubicado en webapp/img/productos/.
+-- Ambas admiten nulos, de modo que un producto sin clasificar o sin foto
+-- sigue siendo valido.
 CREATE TABLE TblProducto (
     Pro_IdProducto INT AUTO_INCREMENT PRIMARY KEY,
     Pro_Nombre VARCHAR(200) NOT NULL,
     Pro_SkuCode VARCHAR(50) UNIQUE,
     Pro_Descripcion VARCHAR(300),
     Pro_Precio DECIMAL(10,2) NOT NULL,
-    Pro_RequiereReceta BOOLEAN DEFAULT FALSE
+    Pro_RequiereReceta BOOLEAN DEFAULT FALSE,
+    Pro_Categoria VARCHAR(50),
+    Pro_Imagen VARCHAR(100)
 ) ENGINE=InnoDB;
 
 -- Productos marcados por los clientes para repetir la compra
@@ -213,21 +221,47 @@ INSERT INTO TblCliente
     ('Diego', 'Martinez', 'Carrera 8 # 15-40, Popayan', '3012345678',
      'diego.martinez@correo.com', '1988-11-02', 37, 5);
 
--- Catalogo de productos
+-- Catalogo de productos, clasificado en las cinco categorias de la tienda:
+-- Medicamentos, Cuidado personal, Botiquin, Bebes y Nutricion.
 INSERT INTO TblProducto
-    (Pro_Nombre, Pro_SkuCode, Pro_Descripcion, Pro_Precio, Pro_RequiereReceta) VALUES
+    (Pro_Nombre, Pro_SkuCode, Pro_Descripcion, Pro_Precio, Pro_RequiereReceta,
+     Pro_Categoria, Pro_Imagen) VALUES
     ('Paracetamol 500 mg', 'MED-001',
-     'Analgesico y antipiretico, caja por 20 tabletas', 8500.00, FALSE),
+     'Analgesico y antipiretico, caja por 20 tabletas', 8500.00, FALSE,
+     'Medicamentos', NULL),
     ('Ibuprofeno 400 mg', 'MED-002',
-     'Antiinflamatorio no esteroideo, caja por 10 tabletas', 12300.00, FALSE),
+     'Antiinflamatorio no esteroideo, caja por 10 tabletas', 12300.00, FALSE,
+     'Medicamentos', NULL),
     ('Amoxicilina 500 mg', 'MED-003',
-     'Antibiotico de amplio espectro, caja por 15 capsulas', 24900.00, TRUE),
+     'Antibiotico de amplio espectro, caja por 15 capsulas', 24900.00, TRUE,
+     'Medicamentos', NULL),
     ('Losartan 50 mg', 'MED-004',
-     'Antihipertensivo, caja por 30 tabletas', 18700.00, TRUE),
-    ('Suero oral con electrolitos', 'CUI-001',
-     'Rehidratacion oral, botella de 500 ml', 5400.00, FALSE),
-    ('Gel antibacterial 250 ml', 'CUI-002',
-     'Higiene de manos con alcohol al 70 por ciento', 9900.00, FALSE);
+     'Antihipertensivo, caja por 30 tabletas', 18700.00, TRUE,
+     'Medicamentos', NULL),
+    ('Suero oral con electrolitos', 'NUT-001',
+     'Rehidratacion oral, botella de 500 ml', 5400.00, FALSE,
+     'Nutricion', NULL),
+    ('Gel antibacterial 250 ml', 'CUI-001',
+     'Higiene de manos con alcohol al 70 por ciento', 9900.00, FALSE,
+     'Cuidado personal', NULL),
+    ('Crema hidratante corporal 400 ml', 'CUI-002',
+     'Hidratacion diaria para piel seca', 21500.00, FALSE,
+     'Cuidado personal', NULL),
+    ('Cepillo dental cerdas suaves', 'CUI-003',
+     'Cepillo de cerdas suaves con protector', 6800.00, FALSE,
+     'Cuidado personal', NULL),
+    ('Alcohol antiseptico 700 ml', 'BOT-001',
+     'Antiseptico de uso externo', 7200.00, FALSE,
+     'Botiquin', NULL),
+    ('Curas adhesivas caja por 20', 'BOT-002',
+     'Apositos adhesivos para heridas menores', 4300.00, FALSE,
+     'Botiquin', NULL),
+    ('Panales etapa 3 paquete por 40', 'BEB-001',
+     'Panales desechables con banda elastica', 48900.00, FALSE,
+     'Bebes', NULL),
+    ('Multivitaminico 60 capsulas', 'NUT-002',
+     'Suplemento de vitaminas y minerales', 32400.00, FALSE,
+     'Nutricion', NULL);
 
 -- Lotes del inventario. Las fechas se calculan sobre la fecha actual para que
 -- el escenario de prueba siga siendo valido en cualquier momento.
@@ -240,7 +274,15 @@ INSERT INTO TblLoteProducto
     (DATE_ADD(CURDATE(), INTERVAL 300 DAY), 'INVIMA-2026M-0220', 60, 'La Sante', 3),
     (DATE_ADD(CURDATE(), INTERVAL 730 DAY), 'INVIMA-2026M-0311', 120, 'Tecnoquimicas', 4),
     (DATE_ADD(CURDATE(), INTERVAL 250 DAY), 'INVIMA-2026M-0450', 200, 'Pisa', 5),
-    (DATE_ADD(CURDATE(), INTERVAL 900 DAY), 'INVIMA-2026M-0510', 300, 'Nosotras', 6);
+    (DATE_ADD(CURDATE(), INTERVAL 900 DAY), 'INVIMA-2026M-0510', 300, 'Nosotras', 6),
+    (DATE_ADD(CURDATE(), INTERVAL 600 DAY), 'INVIMA-2026C-0610', 45, 'Nivea', 7),
+    (DATE_ADD(CURDATE(), INTERVAL 800 DAY), 'INVIMA-2026B-0720', 80, 'JGB', 9),
+    (DATE_ADD(CURDATE(), INTERVAL 950 DAY), 'INVIMA-2026B-0810', 210, 'Curitas', 10),
+    (DATE_ADD(CURDATE(), INTERVAL 700 DAY), 'INVIMA-2026E-0910', 25, 'Winny', 11),
+    (DATE_ADD(CURDATE(), INTERVAL 500 DAY), 'INVIMA-2026N-1010', 55, 'Centrum', 12);
+
+-- El producto 8, Cepillo dental, se deja a proposito sin lote para que el
+-- catalogo muestre el estado Agotado en rojo y se pueda verificar esa regla.
 
 -- Pasarelas de pago
 INSERT INTO TblPasarelaPago (Pas_NombreProveedor, Pas_Apikeypublic) VALUES
