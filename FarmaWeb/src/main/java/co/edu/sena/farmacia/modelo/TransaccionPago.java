@@ -2,6 +2,7 @@ package co.edu.sena.farmacia.modelo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import co.edu.sena.farmacia.util.FormatoMoneda;
 
 /**
  * Representa la tabla TblTransaccionPago: el registro del pago de un pedido
@@ -106,4 +107,9 @@ public class TransaccionPago {
     public boolean getAprobada() {
         return estaAprobada();
     }
+    /** Valor pagado con separador de miles. */
+    public String getValorTexto() {
+        return FormatoMoneda.enPesos(valor);
+    }
+
 }

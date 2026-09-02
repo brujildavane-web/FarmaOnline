@@ -2,6 +2,7 @@ package co.edu.sena.farmacia.modelo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import co.edu.sena.farmacia.util.FormatoMoneda;
 
 /**
  * Representa la tabla TblLineaPedido: el detalle de cada producto incluido
@@ -101,4 +102,19 @@ public class LineaPedido {
     public void setNombreProducto(String nombreProducto) {
         this.nombreProducto = nombreProducto;
     }
+    /** Precio unitario con separador de miles. */
+    public String getPrecioTexto() {
+        return FormatoMoneda.enPesos(precio);
+    }
+
+    /** Subtotal del renglon con separador de miles. */
+    public String getSubtotalTexto() {
+        return FormatoMoneda.enPesos(subtotal);
+    }
+
+    /** Cantidad sin decimales. */
+    public String getCantidadTexto() {
+        return FormatoMoneda.enUnidades(cantidad);
+    }
+
 }

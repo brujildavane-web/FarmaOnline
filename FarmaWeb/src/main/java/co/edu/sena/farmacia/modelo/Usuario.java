@@ -92,4 +92,18 @@ public class Usuario {
     public void setNombreRol(String nombreRol) {
         this.nombreRol = nombreRol;
     }
+
+    /*
+     * Las expresiones EL de las paginas JSP solo reconocen los metodos que
+     * empiezan por get o is. Estos dos alias exponen las verificaciones de
+     * rol como propiedades, para poder escribir usuario.administrador.
+     */
+
+    public boolean getAdministrador() {
+        return esAdministrador();
+    }
+
+    public boolean getFarmaceutico() {
+        return esFarmaceutico();
+    }
 }

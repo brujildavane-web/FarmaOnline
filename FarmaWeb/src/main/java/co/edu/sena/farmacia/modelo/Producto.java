@@ -1,6 +1,7 @@
 package co.edu.sena.farmacia.modelo;
 
 import java.math.BigDecimal;
+import co.edu.sena.farmacia.util.FormatoMoneda;
 
 /**
  * Representa la tabla TblProducto: el catalogo de medicamentos y productos
@@ -14,6 +15,8 @@ public class Producto {
     private String descripcion;
     private BigDecimal precio;
     private boolean requiereReceta;
+    private String categoria;
+    private String imagen;
 
     /** Suma del stock de todos los lotes, calculada en la consulta. */
     private double stockTotal;
@@ -93,6 +96,22 @@ public class Producto {
         this.requiereReceta = requiereReceta;
     }
 
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
+
     public double getStockTotal() {
         return stockTotal;
     }
@@ -108,4 +127,43 @@ public class Producto {
     public String getDisponibilidad() {
         return describirDisponibilidad();
     }
+
+    /**
+     * Indica si el producto tiene una imagen registrada para el catalogo.
+     *
+     * @return true cuando se puede mostrar la foto del producto
+     */
+    public boolean tieneImagen() {
+        return imagen != null && !imagen.trim().isEmpty();
+    }
+
+    /**
+     * Entrega la letra con que se dibuja el recuadro cuando no hay foto.
+     *
+     * @return primera letra del nombre en mayuscula
+     */
+    public String obtenerInicial() {
+        if (nombre == null || nombre.isEmpty()) {
+            return "?";
+        }
+        return nombre.substring(0, 1).toUpperCase();
+    }
+
+    public boolean getConImagen() {
+        return tieneImagen();
+    }
+
+    public String getInicial() {
+        return obtenerInicial();
+    }
+    /** Precio con separador de miles, para mostrarlo en las vistas. */
+    public String getPrecioTexto() {
+        return FormatoMoneda.enPesos(precio);
+    }
+
+    /** Stock sin decimales, para mostrarlo en las vistas. */
+    public String getStockTexto() {
+        return FormatoMoneda.enUnidades(stockTotal);
+    }
+
 }

@@ -2,6 +2,7 @@ package co.edu.sena.farmacia.modelo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import co.edu.sena.farmacia.util.FormatoMoneda;
 
 /**
  * Representa la tabla TblPedido: el encabezado de una compra realizada por
@@ -122,4 +123,14 @@ public class Pedido {
     public BigDecimal getValorImpuesto() {
         return calcularValorImpuesto();
     }
+    /** Total del pedido con separador de miles. */
+    public String getTotalTexto() {
+        return FormatoMoneda.enPesos(total);
+    }
+
+    /** Valor del impuesto con separador de miles. */
+    public String getValorImpuestoTexto() {
+        return FormatoMoneda.enPesos(calcularValorImpuesto());
+    }
+
 }

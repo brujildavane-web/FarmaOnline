@@ -2,6 +2,7 @@ package co.edu.sena.farmacia.modelo;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import co.edu.sena.farmacia.util.FormatoMoneda;
 
 /**
  * Representa la tabla TblLoteProducto: cada ingreso de un producto al
@@ -144,4 +145,9 @@ public class LoteProducto {
     public long getDiasParaVencer() {
         return calcularDiasParaVencer();
     }
+    /** Stock del lote sin decimales. */
+    public String getStockTexto() {
+        return FormatoMoneda.enUnidades(stockActual);
+    }
+
 }
