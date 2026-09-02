@@ -132,10 +132,8 @@
                                 <td>${linea.idPedido}</td>
                                 <td><c:out value="${linea.nombreProducto}"/></td>
                                 <td>${linea.cantidad}</td>
-                                <td>$<fmt:formatNumber value="${linea.precio}"
-                                        type="number" minFractionDigits="2"/></td>
-                                <td>$<fmt:formatNumber value="${linea.subtotal}"
-                                        type="number" minFractionDigits="2"/></td>
+                                <td>$${linea.precioTexto}</td>
+                                <td>$${linea.subtotalTexto}</td>
                                 <td>
                                     <div class="columna-acciones">
                                         <a class="boton boton-secundario boton-pequeno"

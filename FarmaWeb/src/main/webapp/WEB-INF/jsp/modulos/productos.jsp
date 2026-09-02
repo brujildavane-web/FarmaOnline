@@ -80,6 +80,32 @@
                        placeholder="ejemplo: Analgesico y antipiretico, caja por 20 tabletas">
             </div>
 
+            <div class="campo">
+                <label for="categoria">Categoria del catalogo</label>
+                <select id="categoria" name="categoria">
+                    <option value="">Sin clasificar</option>
+                    <c:forEach var="categoria" items="${categorias}">
+                        <option value="${categoria}"
+                                ${productoEnEdicion.categoria eq categoria ? 'selected' : ''}>
+                            <c:out value="${categoria}"/>
+                        </option>
+                    </c:forEach>
+                </select>
+                <span class="ayuda">Define en que seccion de la tienda aparece el producto.</span>
+            </div>
+
+            <div class="campo">
+                <label for="imagen">Archivo de imagen</label>
+                <input type="text" id="imagen" name="imagen" maxlength="100"
+                       value="<c:out value='${productoEnEdicion.imagen}'/>"
+                       placeholder="ejemplo: paracetamol.png">
+                <span class="ayuda">
+                    Nombre del archivo ubicado en webapp/img/productos/.
+                    Formatos PNG, JPG o WEBP. Si se deja vacio, el catalogo muestra
+                    un recuadro con la letra inicial del producto.
+                </span>
+            </div>
+
             <div class="campo campo-casilla">
                 <input type="checkbox" id="requiereReceta" name="requiereReceta"
                        ${productoEnEdicion.requiereReceta ? 'checked' : ''}>
@@ -118,6 +144,7 @@
                             <th scope="col">Codigo</th>
                             <th scope="col">Producto</th>
                             <th scope="col">SKU</th>
+                            <th scope="col">Categoria</th>
                             <th scope="col">Precio</th>
                             <th scope="col">Stock</th>
                             <th scope="col">Disponibilidad</th>
@@ -131,8 +158,15 @@
                                 <td>${producto.idProducto}</td>
                                 <td><c:out value="${producto.nombre}"/></td>
                                 <td><c:out value="${producto.skuCode}"/></td>
-                                <td>$<fmt:formatNumber value="${producto.precio}"
-                                        type="number" minFractionDigits="2"/></td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${empty producto.categoria}">
+                                            <span class="ayuda">sin clasificar</span>
+                                        </c:when>
+                                        <c:otherwise><c:out value="${producto.categoria}"/></c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>$${producto.precioTexto}</td>
                                 <td>${producto.stockTotal}</td>
                                 <td>
                                     <span class="etiqueta ${producto.disponible

@@ -94,6 +94,43 @@
 </c:if>
 
 <div class="tarjeta">
+    <h2>Como se asignan los roles</h2>
+    <p class="descripcion-modulo">
+        Esta informacion es de uso interno del panel de gestion y no se muestra
+        en la tienda publica.
+    </p>
+
+    <div class="contenedor-tabla">
+        <table class="tabla-datos">
+            <thead>
+                <tr>
+                    <th scope="col">Rol</th>
+                    <th scope="col">Quien lo asigna</th>
+                    <th scope="col">A donde entra al ingresar</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="etiqueta etiqueta-disponible">Cliente</span></td>
+                    <td>Se asigna solo, cuando la persona se registra en la tienda</td>
+                    <td>Mi cuenta: pedidos, favoritos y formulas medicas</td>
+                </tr>
+                <tr>
+                    <td><span class="etiqueta etiqueta-advertencia">Farmaceutico</span></td>
+                    <td>El administrador, desde este modulo</td>
+                    <td>Panel de gestion: pedidos y formulas medicas</td>
+                </tr>
+                <tr>
+                    <td><span class="etiqueta etiqueta-agotado">Administrador</span></td>
+                    <td>El administrador, desde este modulo</td>
+                    <td>Panel de gestion: los trece modulos completos</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tarjeta">
     <h2>Usuarios registrados</h2>
 
     <c:choose>

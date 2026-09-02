@@ -9,7 +9,7 @@
 <footer class="pie-pagina">
     <p>
         Sistema de Gestion de Farmacia en Linea &mdash; Version 1.0 &mdash;
-        SENA, Tecnologo en Analisis y Desarrollo de Software, ficha 3235909.
+        SENA - ADSO - 3235909
     </p>
 </footer>
 

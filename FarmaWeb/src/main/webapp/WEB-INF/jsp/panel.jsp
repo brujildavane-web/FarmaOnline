@@ -30,7 +30,7 @@
     <div class="rejilla-indicadores">
         <div class="indicador indicador-destacado">
             <span class="cifra">
-                $<fmt:formatNumber value="${totalVentas}" type="number" minFractionDigits="2"/>
+                $${totalVentasTexto}
             </span>
             <span class="rotulo">Total facturado (pedidos no anulados)</span>
         </div>

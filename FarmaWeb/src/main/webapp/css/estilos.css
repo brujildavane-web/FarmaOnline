@@ -495,3 +495,414 @@ button:focus,
         padding: 8px;
     }
 }
+
+/* ==========================================================================
+ * TIENDA PUBLICA
+ *
+ * Estilos de las pantallas que no exigen cuenta: inicio, catalogo, detalle
+ * de producto, carrito, registro y cuenta del cliente.
+ * Reutilizan la misma paleta declarada arriba:
+ *   verde #2E7D32, blanco #FFFFFF, gris #F5F5F5, hover #1B5E20,
+ *   rojo #C62828 y ambar #F9A825.
+ */
+
+.oculto {
+    position: absolute;
+    left: -9999px;
+}
+
+/* ------------------------------------------------- Encabezado publico */
+
+.tienda-encabezado {
+    background-color: var(--color-principal);
+    color: var(--color-secundario);
+    padding: 12px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    justify-content: space-between;
+}
+
+.tienda-marca {
+    font-size: 1.2rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.tienda-marca span {
+    font-weight: normal;
+    opacity: 0.85;
+    font-size: 0.8rem;
+    display: block;
+}
+
+.tienda-buscador {
+    display: flex;
+    gap: 8px;
+    flex: 1 1 300px;
+    max-width: 520px;
+}
+
+.tienda-buscador input {
+    flex: 1;
+}
+
+.tienda-buscador button {
+    background-color: var(--color-principal-oscuro);
+    white-space: nowrap;
+}
+
+.tienda-acciones {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.boton-carrito {
+    background-color: var(--color-secundario);
+    color: var(--color-principal-oscuro);
+    border-radius: var(--radio-borde);
+    padding: 10px 14px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.boton-carrito:hover,
+.boton-carrito:focus {
+    background-color: var(--color-principal-suave);
+}
+
+.contador-carrito {
+    background-color: var(--color-peligro);
+    color: var(--color-secundario);
+    border-radius: 12px;
+    padding: 1px 8px;
+    margin-left: 4px;
+    font-size: 0.8rem;
+}
+
+.tienda-menu {
+    background-color: var(--color-secundario);
+    border-bottom: 1px solid var(--color-borde);
+    padding: 8px 24px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tienda-menu a {
+    color: var(--color-principal);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: var(--radio-borde);
+    font-size: 0.92rem;
+    border: 1px solid transparent;
+}
+
+.tienda-menu a:hover,
+.tienda-menu a:focus {
+    background-color: var(--color-principal-suave);
+    border-color: var(--color-principal);
+}
+
+.tienda-menu a.activo {
+    background-color: var(--color-principal);
+    color: var(--color-secundario);
+}
+
+/* -------------------------------------------------------- Aviso de rol */
+
+.aviso-invitado {
+    background-color: var(--color-principal-suave);
+    border-left: 6px solid var(--color-principal);
+    padding: 12px 16px;
+    border-radius: var(--radio-borde);
+    margin-bottom: 20px;
+    font-size: 0.92rem;
+}
+
+.insignia-rol {
+    display: inline-block;
+    background-color: var(--color-principal);
+    color: var(--color-secundario);
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.insignia-rol-invitado {
+    background-color: var(--color-texto-suave);
+}
+
+/* ------------------------------------------------------------- Banner */
+
+.banner {
+    background: linear-gradient(135deg, var(--color-principal), var(--color-principal-oscuro));
+    color: var(--color-secundario);
+    border-radius: var(--radio-borde);
+    padding: 36px 32px;
+    margin-bottom: 28px;
+}
+
+.banner h1 {
+    margin: 0 0 10px;
+    font-size: 1.8rem;
+}
+
+.banner p {
+    margin: 0 0 20px;
+    max-width: 620px;
+    opacity: 0.95;
+}
+
+.banner .boton {
+    background-color: var(--color-secundario);
+    color: var(--color-principal-oscuro);
+    font-weight: bold;
+}
+
+/* -------------------------------------------------------- Categorias */
+
+.rejilla-categorias {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.categoria {
+    background-color: var(--color-secundario);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-tarjeta);
+    padding: 18px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--color-texto);
+    border-top: 4px solid var(--color-principal);
+}
+
+.categoria:hover,
+.categoria:focus {
+    background-color: var(--color-principal-suave);
+}
+
+.categoria .icono {
+    font-size: 1.8rem;
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* --------------------------------------------------- Tarjetas producto */
+
+.rejilla-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
+}
+
+.producto {
+    background-color: var(--color-secundario);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-tarjeta);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.producto .imagen {
+    height: 130px;
+    background-color: var(--color-principal-suave);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+    color: var(--color-principal-oscuro);
+    font-weight: bold;
+}
+
+.producto .cuerpo {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.producto .nombre {
+    font-weight: bold;
+    color: var(--color-texto);
+    text-decoration: none;
+    line-height: 1.3;
+}
+
+.producto .nombre:hover {
+    color: var(--color-principal-oscuro);
+    text-decoration: underline;
+}
+
+.producto .precio {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--color-principal-oscuro);
+}
+
+.producto .etiquetas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.producto .pie {
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.producto .pie button,
+.producto .pie .boton {
+    width: 100%;
+    text-align: center;
+}
+
+.producto.agotado .imagen {
+    background-color: var(--color-peligro-suave);
+    color: var(--color-peligro);
+}
+
+/* ------------------------------------------------------------ Carrito */
+
+.resumen-compra {
+    background-color: var(--color-secundario);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-tarjeta);
+    padding: 20px 24px;
+}
+
+.linea-resumen {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.linea-resumen.total {
+    border-bottom: none;
+    border-top: 2px solid var(--color-principal);
+    margin-top: 6px;
+    padding-top: 14px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--color-principal-oscuro);
+}
+
+.columnas-carrito {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.control-cantidad {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.control-cantidad button {
+    padding: 4px 10px;
+    font-size: 1rem;
+}
+
+.control-cantidad input {
+    width: 60px;
+    text-align: center;
+}
+
+@media (max-width: 800px) {
+    .columnas-carrito {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ------------------------------------------- Cuenta del cliente */
+
+.rejilla-cuenta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.opcion-cuenta {
+    background-color: var(--color-secundario);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-tarjeta);
+    padding: 20px;
+    text-decoration: none;
+    color: var(--color-texto);
+    border-left: 4px solid var(--color-principal);
+}
+
+.opcion-cuenta:hover,
+.opcion-cuenta:focus {
+    background-color: var(--color-principal-suave);
+}
+
+.opcion-cuenta strong {
+    display: block;
+    color: var(--color-principal-oscuro);
+    margin-bottom: 4px;
+}
+
+.opcion-cuenta span {
+    font-size: 0.88rem;
+    color: var(--color-texto-suave);
+}
+
+.ficha-usuario {
+    background-color: var(--color-secundario);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-tarjeta);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.ficha-usuario .avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--color-principal);
+    color: var(--color-secundario);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* ------------------------------------------------------ Campo de rol */
+
+.campo-rol {
+    background-color: var(--color-principal-suave);
+    border: 1px dashed var(--color-principal);
+    border-radius: var(--radio-borde);
+    padding: 12px 14px;
+}
+
+.campo-rol strong {
+    color: var(--color-principal-oscuro);
+}
+
+.campo-rol .ayuda {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.82rem;
+    color: var(--color-texto-suave);
+}

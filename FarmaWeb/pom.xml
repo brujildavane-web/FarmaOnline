@@ -54,7 +54,19 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JSTL 3.0: etiquetas estandar usadas en las paginas JSP -->
+        <!--
+            JSTL 3.0: etiquetas estandar usadas en las paginas JSP.
+
+            Se necesitan los dos artefactos: el API aporta las clases base
+            de las etiquetas y la implementacion de Glassfish aporta los
+            manejadores. Se excluye el API de EL porque lo provee Tomcat y
+            empaquetarlo dentro del WAR provoca conflictos de carga.
+
+            Nota: en este proyecto las cantidades de dinero no se formatean
+            con fmt:formatNumber, sino en la capa de utilidades con la clase
+            FormatoMoneda, para no depender del comportamiento de la
+            biblioteca de formato y tener un unico criterio de presentacion.
+        -->
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
@@ -64,6 +76,12 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>3.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.el</groupId>
+                    <artifactId>jakarta.el-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Controlador JDBC de MySQL, compatible tambien con MariaDB de XAMPP -->

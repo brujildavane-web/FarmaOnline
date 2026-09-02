@@ -90,10 +90,8 @@
 
         <p>
             Estado: <strong>${pedidoConsultado.estado}</strong> |
-            Total: <strong>$<fmt:formatNumber value="${pedidoConsultado.total}"
-                    type="number" minFractionDigits="2"/></strong> |
-            IVA contenido (19%): $<fmt:formatNumber value="${pedidoConsultado.valorImpuesto}"
-                    type="number" minFractionDigits="2"/>
+            Total: <strong>$${pedidoConsultado.totalTexto}</strong> |
+            IVA contenido (19%): $${pedidoConsultado.valorImpuestoTexto}
         </p>
 
         <c:choose>
@@ -120,10 +118,8 @@
                                 <tr>
                                     <td><c:out value="${linea.nombreProducto}"/></td>
                                     <td>${linea.cantidad}</td>
-                                    <td>$<fmt:formatNumber value="${linea.precio}"
-                                            type="number" minFractionDigits="2"/></td>
-                                    <td>$<fmt:formatNumber value="${linea.subtotal}"
-                                            type="number" minFractionDigits="2"/></td>
+                                    <td>$${linea.precioTexto}</td>
+                                    <td>$${linea.subtotalTexto}</td>
                                 </tr>
                             </c:forEach>
                         </tbody>
@@ -164,8 +160,7 @@
                                 <td>${pedido.fecha}</td>
                                 <td><c:out value="${pedido.nombreCliente}"/></td>
                                 <td><c:out value="${pedido.nombreFarmaceutico}"/></td>
-                                <td>$<fmt:formatNumber value="${pedido.total}"
-                                        type="number" minFractionDigits="2"/></td>
+                                <td>$${pedido.totalTexto}</td>
                                 <td>
                                     <span class="etiqueta ${pedido.estado eq 'ANULADO'
                                             ? 'etiqueta-agotado' : 'etiqueta-disponible'}">

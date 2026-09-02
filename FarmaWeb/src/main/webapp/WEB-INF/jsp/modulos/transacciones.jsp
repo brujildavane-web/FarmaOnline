@@ -61,8 +61,7 @@
                         <option value="${pedido.idPedido}"
                                 ${pedidoSeleccionado eq pedido.idPedido ? 'selected' : ''}>
                             Pedido ${pedido.idPedido} - <c:out value="${pedido.nombreCliente}"/>
-                            (total $<fmt:formatNumber value="${pedido.total}"
-                                    type="number" minFractionDigits="2"/>)
+                            (total $${pedido.totalTexto})
                         </option>
                     </c:forEach>
                 </select>
@@ -147,8 +146,7 @@
                                 <td>${transaccion.idPedido}</td>
                                 <td><c:out value="${transaccion.nombreCliente}"/></td>
                                 <td><c:out value="${transaccion.nombreProveedor}"/></td>
-                                <td>$<fmt:formatNumber value="${transaccion.valor}"
-                                        type="number" minFractionDigits="2"/></td>
+                                <td>$${transaccion.valorTexto}</td>
                                 <td>${transaccion.fechaPago}</td>
                                 <td>
                                     <span class="etiqueta ${transaccion.aprobada
