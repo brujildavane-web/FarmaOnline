@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import co.edu.sena.farmacia.modelo.Producto;
 import co.edu.sena.farmacia.util.ConexionBaseDatos;
@@ -22,14 +24,46 @@ public class ProductoDao implements DaoGenerico<Producto> {
      */
     private static final String SQL_LISTAR =
             "SELECT p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, "
-            + "p.Pro_Precio, p.Pro_RequiereReceta, "
+            + "p.Pro_Precio, p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen, "
             + "COALESCE(SUM(CASE WHEN l.LotP_FechaVencimiento >= CURDATE() "
             + "THEN l.LotP_StockActual ELSE 0 END), 0) AS StockTotal "
             + "FROM TblProducto p "
             + "LEFT JOIN TblLoteProducto l ON l.TblPro_ProIdProducto = p.Pro_IdProducto "
             + "GROUP BY p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, "
-            + "p.Pro_Precio, p.Pro_RequiereReceta "
+            + "p.Pro_Precio, p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen "
             + "ORDER BY p.Pro_Nombre";
+
+    /** Igual que el listado general, pero acotado a una categoria. */
+    private static final String SQL_LISTAR_POR_CATEGORIA =
+            "SELECT p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, "
+            + "p.Pro_Precio, p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen, "
+            + "COALESCE(SUM(CASE WHEN l.LotP_FechaVencimiento >= CURDATE() "
+            + "THEN l.LotP_StockActual ELSE 0 END), 0) AS StockTotal "
+            + "FROM TblProducto p "
+            + "LEFT JOIN TblLoteProducto l ON l.TblPro_ProIdProducto = p.Pro_IdProducto "
+            + "WHERE p.Pro_Categoria = ? "
+            + "GROUP BY p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, "
+            + "p.Pro_Precio, p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen "
+            + "ORDER BY p.Pro_Nombre";
+
+    /** Busqueda del catalogo publico por nombre o codigo. */
+    private static final String SQL_BUSCAR_POR_TEXTO =
+            "SELECT p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, "
+            + "p.Pro_Precio, p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen, "
+            + "COALESCE(SUM(CASE WHEN l.LotP_FechaVencimiento >= CURDATE() "
+            + "THEN l.LotP_StockActual ELSE 0 END), 0) AS StockTotal "
+            + "FROM TblProducto p "
+            + "LEFT JOIN TblLoteProducto l ON l.TblPro_ProIdProducto = p.Pro_IdProducto "
+            + "WHERE p.Pro_Nombre LIKE ? OR p.Pro_SkuCode LIKE ? "
+            + "GROUP BY p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, "
+            + "p.Pro_Precio, p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen "
+            + "ORDER BY p.Pro_Nombre";
+
+    /** Categorias que realmente tienen productos, con su conteo. */
+    private static final String SQL_CONTAR_POR_CATEGORIA =
+            "SELECT Pro_Categoria, COUNT(*) AS Cuantos FROM TblProducto "
+            + "WHERE Pro_Categoria IS NOT NULL AND Pro_Categoria <> '' "
+            + "GROUP BY Pro_Categoria ORDER BY Pro_Categoria";
 
     /** Subconsulta que calcula el stock vigente de un solo producto. */
     private static final String SUBCONSULTA_STOCK =
@@ -39,21 +73,22 @@ public class ProductoDao implements DaoGenerico<Producto> {
 
     private static final String SQL_BUSCAR =
             "SELECT p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, p.Pro_Precio, "
-            + "p.Pro_RequiereReceta, " + SUBCONSULTA_STOCK + " FROM TblProducto p "
-            + "WHERE p.Pro_IdProducto = ?";
+            + "p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen, "
+            + SUBCONSULTA_STOCK + " FROM TblProducto p WHERE p.Pro_IdProducto = ?";
 
     private static final String SQL_BUSCAR_POR_SKU =
             "SELECT p.Pro_IdProducto, p.Pro_Nombre, p.Pro_SkuCode, p.Pro_Descripcion, p.Pro_Precio, "
-            + "p.Pro_RequiereReceta, " + SUBCONSULTA_STOCK + " FROM TblProducto p "
-            + "WHERE p.Pro_SkuCode = ?";
+            + "p.Pro_RequiereReceta, p.Pro_Categoria, p.Pro_Imagen, "
+            + SUBCONSULTA_STOCK + " FROM TblProducto p WHERE p.Pro_SkuCode = ?";
 
     private static final String SQL_INSERTAR =
             "INSERT INTO TblProducto (Pro_Nombre, Pro_SkuCode, Pro_Descripcion, Pro_Precio, "
-            + "Pro_RequiereReceta) VALUES (?, ?, ?, ?, ?)";
+            + "Pro_RequiereReceta, Pro_Categoria, Pro_Imagen) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_ACTUALIZAR =
             "UPDATE TblProducto SET Pro_Nombre = ?, Pro_SkuCode = ?, Pro_Descripcion = ?, "
-            + "Pro_Precio = ?, Pro_RequiereReceta = ? WHERE Pro_IdProducto = ?";
+            + "Pro_Precio = ?, Pro_RequiereReceta = ?, Pro_Categoria = ?, Pro_Imagen = ? "
+            + "WHERE Pro_IdProducto = ?";
 
     private static final String SQL_ELIMINAR = "DELETE FROM TblProducto WHERE Pro_IdProducto = ?";
 
@@ -79,6 +114,87 @@ public class ProductoDao implements DaoGenerico<Producto> {
             throw new ExcepcionPersistencia("No fue posible consultar el catalogo de productos.", error);
         }
         return productos;
+    }
+
+    /**
+     * Consulta los productos de una categoria para el catalogo publico.
+     *
+     * @param categoria nombre exacto de la categoria
+     * @return productos de esa categoria con su stock vigente
+     */
+    public List<Producto> listarPorCategoria(String categoria) {
+        List<Producto> productos = new ArrayList<>();
+
+        try (Connection conexion = ConexionBaseDatos.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_LISTAR_POR_CATEGORIA)) {
+
+            sentencia.setString(1, categoria);
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    productos.add(convertirFila(resultado));
+                }
+            }
+
+        } catch (SQLException error) {
+            throw new ExcepcionPersistencia("No fue posible consultar la categoria del catalogo.", error);
+        }
+        return productos;
+    }
+
+    /**
+     * Busca productos cuyo nombre o codigo contengan el texto indicado.
+     *
+     * Da soporte al buscador de la tienda publica.
+     *
+     * @param texto palabra o fragmento a buscar
+     * @return productos que coinciden, con su stock vigente
+     */
+    public List<Producto> buscarPorTexto(String texto) {
+        List<Producto> productos = new ArrayList<>();
+        String patron = "%" + texto + "%";
+
+        try (Connection conexion = ConexionBaseDatos.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_BUSCAR_POR_TEXTO)) {
+
+            sentencia.setString(1, patron);
+            sentencia.setString(2, patron);
+
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    productos.add(convertirFila(resultado));
+                }
+            }
+
+        } catch (SQLException error) {
+            throw new ExcepcionPersistencia("No fue posible realizar la busqueda en el catalogo.", error);
+        }
+        return productos;
+    }
+
+    /**
+     * Cuenta cuantos productos hay en cada categoria.
+     *
+     * Alimenta las tarjetas de categoria de la pagina de inicio. Se usa
+     * LinkedHashMap para conservar el orden alfabetico de la consulta.
+     *
+     * @return nombre de la categoria y su cantidad de productos
+     */
+    public Map<String, Integer> contarPorCategoria() {
+        Map<String, Integer> conteos = new LinkedHashMap<>();
+
+        try (Connection conexion = ConexionBaseDatos.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_CONTAR_POR_CATEGORIA);
+             ResultSet resultado = sentencia.executeQuery()) {
+
+            while (resultado.next()) {
+                conteos.put(resultado.getString("Pro_Categoria"), resultado.getInt("Cuantos"));
+            }
+
+        } catch (SQLException error) {
+            throw new ExcepcionPersistencia("No fue posible contar los productos por categoria.", error);
+        }
+        return conteos;
     }
 
     @Override
@@ -161,7 +277,7 @@ public class ProductoDao implements DaoGenerico<Producto> {
              PreparedStatement sentencia = conexion.prepareStatement(SQL_ACTUALIZAR)) {
 
             asignarParametros(sentencia, producto);
-            sentencia.setInt(6, producto.getIdProducto());
+            sentencia.setInt(8, producto.getIdProducto());
             sentencia.executeUpdate();
 
         } catch (SQLException error) {
@@ -202,6 +318,8 @@ public class ProductoDao implements DaoGenerico<Producto> {
         sentencia.setString(3, producto.getDescripcion());
         sentencia.setBigDecimal(4, producto.getPrecio());
         sentencia.setBoolean(5, producto.isRequiereReceta());
+        sentencia.setString(6, producto.getCategoria());
+        sentencia.setString(7, producto.getImagen());
     }
 
     private Producto convertirFila(ResultSet resultado) throws SQLException {
@@ -212,6 +330,8 @@ public class ProductoDao implements DaoGenerico<Producto> {
         producto.setDescripcion(resultado.getString("Pro_Descripcion"));
         producto.setPrecio(resultado.getBigDecimal("Pro_Precio"));
         producto.setRequiereReceta(resultado.getBoolean("Pro_RequiereReceta"));
+        producto.setCategoria(resultado.getString("Pro_Categoria"));
+        producto.setImagen(resultado.getString("Pro_Imagen"));
         producto.setStockTotal(resultado.getDouble("StockTotal"));
         return producto;
     }
