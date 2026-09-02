@@ -35,10 +35,11 @@ public class ServletLogin extends ServletBase {
             throws ServletException, IOException {
 
         if (existeSesionActiva(peticion)) {
-            redirigirAlModulo(peticion, respuesta, "panel");
+            redirigirSegunRol(peticion, respuesta, obtenerUsuario(peticion));
             return;
         }
 
+        peticion.setAttribute("carrito", obtenerCarrito(peticion));
         peticion.setAttribute("baseDatosDisponible", ConexionBaseDatos.probarConexion());
         peticion.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(peticion, respuesta);
     }
@@ -61,13 +62,34 @@ public class ServletLogin extends ServletBase {
             sesion.setAttribute(ATRIBUTO_USUARIO, usuarioAutenticado);
 
             publicarExito(peticion, "Bienvenido " + usuarioAutenticado.getEmail() + ".");
-            redirigirAlModulo(peticion, respuesta, "panel");
+            redirigirSegunRol(peticion, respuesta, usuarioAutenticado);
 
         } catch (RuntimeException error) {
             publicarErrorDeExcepcion(peticion, error);
             peticion.setAttribute("emailDigitado", email);
+            peticion.setAttribute("carrito", obtenerCarrito(peticion));
             peticion.setAttribute("baseDatosDisponible", ConexionBaseDatos.probarConexion());
             peticion.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(peticion, respuesta);
         }
+    }
+
+    /**
+     * Lleva al usuario a la pantalla que corresponde a su perfil.
+     *
+     * Administrador y Farmaceutico entran al panel de gestion; el Cliente
+     * entra a su cuenta, donde puede confirmar la compra que dejo en el
+     * carrito antes de identificarse.
+     *
+     * @param peticion peticion HTTP en curso
+     * @param respuesta respuesta HTTP en curso
+     * @param usuario usuario autenticado
+     */
+    private void redirigirSegunRol(HttpServletRequest peticion, HttpServletResponse respuesta,
+            Usuario usuario) throws IOException {
+
+        boolean esPerfilDeGestion = usuario != null
+                && (usuario.esAdministrador() || usuario.esFarmaceutico());
+
+        redirigirAlModulo(peticion, respuesta, esPerfilDeGestion ? "panel" : "micuenta");
     }
 }

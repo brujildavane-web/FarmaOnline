@@ -3,6 +3,8 @@ package co.edu.sena.farmacia.controlador;
 import java.io.IOException;
 
 import co.edu.sena.farmacia.logica.ExcepcionNegocio;
+import co.edu.sena.farmacia.modelo.Carrito;
+import co.edu.sena.farmacia.modelo.Usuario;
 import co.edu.sena.farmacia.persistencia.ExcepcionPersistencia;
 import co.edu.sena.farmacia.util.ConversorDatos;
 import jakarta.servlet.ServletException;
@@ -25,8 +27,14 @@ public abstract class ServletBase extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    /** Carpeta donde viven las paginas JSP de los modulos. */
+    /** Carpeta donde viven las paginas JSP de los modulos de gestion. */
     protected static final String RUTA_VISTAS = "/WEB-INF/jsp/modulos/";
+
+    /** Carpeta donde viven las paginas JSP de la tienda publica. */
+    protected static final String RUTA_VISTAS_TIENDA = "/WEB-INF/jsp/tienda/";
+
+    /** Nombre con que se guarda el carrito de compras en la sesion. */
+    public static final String ATRIBUTO_CARRITO = "carritoSesion";
 
     /** Nombre con que se guarda el usuario autenticado en la sesion. */
     public static final String ATRIBUTO_USUARIO = "usuarioSesion";
@@ -135,6 +143,52 @@ public abstract class ServletBase extends HttpServlet {
     protected String leerAccion(HttpServletRequest peticion, String accionPorDefecto) {
         String accion = peticion.getParameter("accion");
         return ConversorDatos.estaVacio(accion) ? accionPorDefecto : accion.trim().toLowerCase();
+    }
+
+    /**
+     * Entrega el control a una pagina JSP de la tienda publica.
+     *
+     * @param peticion peticion HTTP en curso
+     * @param respuesta respuesta HTTP en curso
+     * @param nombreVista nombre del archivo JSP dentro de la carpeta de tienda
+     */
+    protected void reenviarATienda(HttpServletRequest peticion, HttpServletResponse respuesta,
+            String nombreVista) throws ServletException, IOException {
+        peticion.getRequestDispatcher(RUTA_VISTAS_TIENDA + nombreVista).forward(peticion, respuesta);
+    }
+
+    /**
+     * Recupera el carrito de la sesion y lo crea si es la primera visita.
+     *
+     * El carrito no se guarda en la base de datos: vive en la sesion hasta
+     * que el cliente confirma el pedido.
+     *
+     * @param peticion peticion HTTP en curso
+     * @return carrito del visitante, nunca nulo
+     */
+    protected Carrito obtenerCarrito(HttpServletRequest peticion) {
+        HttpSession sesion = peticion.getSession(true);
+        Carrito carrito = (Carrito) sesion.getAttribute(ATRIBUTO_CARRITO);
+
+        if (carrito == null) {
+            carrito = new Carrito();
+            sesion.setAttribute(ATRIBUTO_CARRITO, carrito);
+        }
+        return carrito;
+    }
+
+    /**
+     * Recupera el usuario autenticado, si lo hay.
+     *
+     * @param peticion peticion HTTP en curso
+     * @return el usuario en sesion, o null cuando se navega como visitante
+     */
+    protected Usuario obtenerUsuario(HttpServletRequest peticion) {
+        HttpSession sesion = peticion.getSession(false);
+        if (sesion == null) {
+            return null;
+        }
+        return (Usuario) sesion.getAttribute(ATRIBUTO_USUARIO);
     }
 
     /**

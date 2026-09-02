@@ -50,6 +50,7 @@ public class ServletProducto extends ServletBase {
             }
 
             peticion.setAttribute("listaProductos", servicioProducto.consultarTodos());
+            peticion.setAttribute("categorias", ServicioProducto.CATEGORIAS);
 
         } catch (RuntimeException error) {
             publicarErrorDeExcepcion(peticion, error);
@@ -70,6 +71,8 @@ public class ServletProducto extends ServletBase {
             producto.setDescripcion(peticion.getParameter("descripcion"));
             producto.setPrecio(ConversorDatos.aDecimal(peticion.getParameter("precio"), "precio"));
             producto.setRequiereReceta(ConversorDatos.aBooleano(peticion.getParameter("requiereReceta")));
+            producto.setCategoria(ConversorDatos.limpiar(peticion.getParameter("categoria")));
+            producto.setImagen(ConversorDatos.limpiar(peticion.getParameter("imagen")));
 
             if (producto.getIdProducto() > 0) {
                 servicioProducto.modificar(producto);

@@ -3,6 +3,7 @@ package co.edu.sena.farmacia.controlador;
 import java.io.IOException;
 
 import co.edu.sena.farmacia.logica.ServicioTablero;
+import co.edu.sena.farmacia.util.FormatoMoneda;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +28,8 @@ public class ServletPanel extends ServletBase {
 
         try {
             peticion.setAttribute("conteosPorModulo", servicioTablero.contarRegistrosPorModulo());
-            peticion.setAttribute("totalVentas", servicioTablero.calcularTotalVentas());
+            peticion.setAttribute("totalVentasTexto",
+                    FormatoMoneda.enPesos(servicioTablero.calcularTotalVentas()));
             peticion.setAttribute("alertasCaducidad", servicioTablero.contarAlertasCaducidad());
 
         } catch (RuntimeException error) {
