@@ -47,14 +47,37 @@ mvn cargo:run
 
 Requiere **JDK 17** y **Maven 3.9+** instalados.
 
-## Los 13 módulos desarrollados
+## Estructura del sistema
+
+La aplicación tiene dos zonas y tres perfiles de acceso.
+
+### Tienda pública, sin cuenta
+
+Página de inicio, catálogo por categorías, detalle de producto y carrito de
+compras. Cualquier visitante puede recorrerla y armar su carrito; la cuenta se
+solicita solo al confirmar el pedido. Quien se registra recibe automáticamente
+el rol **Cliente**, el único que se asigna sin intervención del administrador.
+
+### Panel de gestión, con cuenta y rol autorizado
+
+Los 13 módulos derivados del modelo relacional, más el tablero de indicadores:
 
 Roles · Usuarios · Clientes · Farmacéuticos · Productos · Inventario por lotes ·
 Favoritos · Pedidos · Detalle de pedidos · Fórmulas médicas · Historial ·
 Pasarelas de pago · Transacciones de pago
 
 Cada módulo ofrece consulta, registro, edición y eliminación, con validaciones de
-negocio en la capa de lógica.
+negocio en la capa de lógica. Esta zona está reservada a los perfiles
+**Administrador** y **Farmacéutico**; un cliente autenticado que intente entrar
+es devuelto a su cuenta.
+
+### Perfiles
+
+| Rol | Quién lo asigna | A dónde entra |
+|---|---|---|
+| Cliente | Se asigna solo al registrarse en la tienda | Mi cuenta: pedidos, favoritos y fórmulas |
+| Farmacéutico | El administrador, desde el módulo de Usuarios | Panel de gestión |
+| Administrador | El administrador, desde el módulo de Usuarios | Panel de gestión completo |
 
 ## Identidad visual
 

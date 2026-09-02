@@ -5,9 +5,19 @@
   COMO EJECUTAR EL PROYECTO
 ===============================================================================
 
-Aplicacion web Java con los 13 modulos derivados del modelo relacional, mas un
-tablero de gestion. Construida con Servlets, JSP y JDBC sobre una arquitectura
-de tres capas: IGU, Logica y Persistencia.
+Aplicacion web Java con dos zonas:
+
+  TIENDA PUBLICA   No exige cuenta. Pagina de inicio, catalogo por categorias,
+                   detalle de producto y carrito de compras. La cuenta se pide
+                   solo al confirmar el pedido, y quien se registra recibe el
+                   rol Cliente.
+
+  PANEL DE GESTION Los 13 modulos derivados del modelo relacional mas el
+                   tablero de indicadores. Reservado a los perfiles
+                   Administrador y Farmaceutico.
+
+Construida con Servlets, JSP y JDBC sobre una arquitectura de tres capas:
+IGU, Logica y Persistencia.
 
 El codigo fuente esta en la carpeta FarmaWeb.
 La version previa del modulo de medicamentos en Node.js se conserva en la raiz
@@ -99,13 +109,29 @@ Para detener el servidor: Ctrl+C en esa terminal.
 
       http://localhost:8080/farmaweb
 
+Se abre la tienda publica: puede recorrer el catalogo y armar el carrito sin
+registrarse. Para confirmar un pedido se crea una cuenta o se ingresa.
+
   Usuarios de prueba:
 
       Administrador   admin@farmacia.com          admin123
       Farmaceutico    carlos.ruiz@farmacia.com    farma123
       Cliente         laura.gomez@correo.com      cliente123
 
+Administrador y Farmaceutico entran al panel de gestion; el Cliente entra a
+Mi cuenta. Un cliente no puede abrir los modulos de gestion ni escribiendo la
+direccion: el sistema lo devuelve a su cuenta.
+
 Las contrasenas se almacenan cifradas con SHA-256, nunca en texto plano.
+
+
+-------------------------------------------------------------------------------
+  COMO SE ASIGNAN LOS ROLES
+-------------------------------------------------------------------------------
+
+      Cliente        Se asigna solo, al registrarse en la tienda
+      Farmaceutico   Lo asigna el administrador, desde el modulo de Usuarios
+      Administrador  Lo asigna el administrador, desde el modulo de Usuarios
 
 
 -------------------------------------------------------------------------------
@@ -139,7 +165,19 @@ por ejemplo C:\ModuloFarma
 
 
 -------------------------------------------------------------------------------
-  LOS 13 MODULOS Y SU TABLA
+  PANTALLAS DE LA TIENDA PUBLICA
+-------------------------------------------------------------------------------
+
+      Inicio                 /            o /inicio
+      Catalogo               /catalogo    filtra con ?categoria= y busca con ?q=
+      Detalle de producto    /producto?id=N
+      Carrito                /carrito
+      Crear cuenta           /registro
+      Mi cuenta              /micuenta
+
+
+-------------------------------------------------------------------------------
+  LOS 13 MODULOS DE GESTION Y SU TABLA
 -------------------------------------------------------------------------------
 
       Roles                  /roles           TblRol
@@ -157,6 +195,10 @@ por ejemplo C:\ModuloFarma
       Transacciones          /transacciones   TblTransaccionPago
 
 Mas el tablero de gestion en /panel, que reune los indicadores del sistema.
+
+Las cinco categorias del catalogo son: Medicamentos, Cuidado personal,
+Botiquin, Bebes y Nutricion. Se asignan a cada producto desde el modulo de
+Productos, junto con el nombre del archivo de su fotografia.
 
 
 -------------------------------------------------------------------------------

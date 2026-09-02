@@ -1,33 +1,43 @@
 # FarmaWeb — Módulos del Sistema de Gestión de Farmacia en Línea
 
-Aplicación web Java que implementa los **13 módulos** derivados del modelo relacional
-del proyecto formativo (evidencia GA6‐220501096‐AA2‐EV02), organizada en las tres capas
-definidas en el documento de estándares de codificación GA7‐220501096‐AA1‐EV02.
+Aplicación web Java del proyecto formativo. Consta de una **tienda pública** que no
+exige cuenta y un **panel de gestión** con los **13 módulos** derivados del modelo
+relacional (evidencia GA6‐220501096‐AA2‐EV02), organizada en las tres capas definidas
+en el documento de estándares de codificación GA7‐220501096‐AA1‐EV02.
+
+74 clases Java, 29 páginas JSP y 20 servlets.
 
 ## Cumplimiento de los ítems de la evidencia
 
 | Ítem | Dónde se evidencia |
 |---|---|
-| 1. Formularios HTML con servlets | 13 páginas JSP con formularios `<form>` que envían a 16 servlets en `co.edu.sena.farmacia.controlador` |
-| 2. Métodos GET y POST para parámetros | `doGet` atiende `?accion=listar\|editar\|eliminar\|detalle` y los filtros; `doPost` recibe los datos de los formularios |
-| 3. Elementos de JSP | Directivas `page`, `taglib` e `include`; expresiones EL; etiquetas JSTL (`c:forEach`, `c:if`, `c:choose`, `c:out`, `c:set`, `fmt:formatNumber`); objetos implícitos (`session`, `request`, `pageContext`, `response`); scriptlets; plantillas maestras reutilizables |
+| 1. Formularios HTML con servlets | 29 páginas JSP con formularios `<form>` que envían a 20 servlets en `co.edu.sena.farmacia.controlador` |
+| 2. Métodos GET y POST para parámetros | GET para consultas: `?accion=editar\|eliminar\|detalle`, `?categoria=`, `?q=`, `?id=`. POST para todo lo que modifica datos: registro, edición, carrito, ingreso y confirmación de pedidos |
+| 3. Elementos de JSP | Directivas `page`, `taglib` e `include`; expresiones EL con invocación de métodos; etiquetas JSTL (`c:forEach`, `c:if`, `c:choose`, `c:out`, `c:set`); objetos implícitos (`session`, `request`, `pageContext`, `response`); scriptlets; `jsp:forward`; plantillas maestras y fragmentos reutilizables |
 | 4. Versionamiento del código | Repositorio Git con `.gitignore`, commits descriptivos por módulo y repositorio remoto en GitHub |
 
 ## Arquitectura en tres capas
 
 ```
 src/main/java/co/edu/sena/farmacia/
-├── modelo/          Clases del dominio (POO: herencia Persona → Cliente, Farmaceutico)
-├── persistencia/    DAOs con JDBC + PreparedStatement (13 DAOs + interfaz DaoGenerico)
-├── logica/          Servicios con las reglas de negocio y validaciones (13 servicios)
-├── controlador/     Servlets (IGU ↔ Lógica) + filtro de seguridad
-└── util/            Conexión a la base de datos, cifrado de contraseñas, conversiones
+├── modelo/          16 clases del dominio. POO: herencia Persona → Cliente y
+│                    Farmaceutico. Carrito e ItemCarrito viven en la sesión.
+├── persistencia/    13 DAOs con JDBC y PreparedStatement, más la interfaz
+│                    DaoGenerico y la excepción de persistencia
+├── logica/          16 servicios con las reglas de negocio y validaciones,
+│                    incluidos ServicioCarrito y ServicioRegistro
+├── controlador/     20 servlets (IGU ↔ Lógica), la clase base común y el
+│                    filtro de seguridad con autorización por rol
+└── util/            Conexión a la base, cifrado SHA-256, conversión de
+                     parámetros y formato de moneda
 
 src/main/webapp/
 ├── css/estilos.css              Paleta e identidad visual del proyecto
-├── index.jsp                    Punto de entrada
+├── img/productos/               Fotografías del catálogo
+├── index.jsp                    Entrada: reenvía a la tienda
 └── WEB-INF/jsp/
-    ├── comunes/                 Plantillas maestras (cabecera, menú, pie)
+    ├── comunes/                 Plantillas del panel (cabecera, menú, pie)
+    ├── tienda/                  9 páginas de la tienda pública y sus fragmentos
     ├── login.jsp, panel.jsp, error.jsp
     └── modulos/                 Una página por cada uno de los 13 módulos
 ```
@@ -116,7 +126,28 @@ La primera ejecución descarga Tomcat 10.1 (unos 15 MB) y las dependencias.
 
 Las contraseñas se almacenan cifradas con SHA‐256; nunca en texto plano.
 
-## Los 13 módulos y su tabla
+## Tienda pública
+
+Zona que no exige cuenta. Es la puerta de entrada del sistema.
+
+| Pantalla | Ruta | Qué hace |
+|---|---|---|
+| Inicio | `/` o `/inicio` | Banner, categorías con su conteo y productos del catálogo |
+| Catálogo | `/catalogo` | Filtro por categoría (`?categoria=`) y buscador (`?q=`), ambos por GET |
+| Detalle de producto | `/producto?id=N` | Ficha, disponibilidad y aviso si requiere receta |
+| Carrito | `/carrito` | Vive en la sesión HTTP; agregar, actualizar, quitar y confirmar por POST |
+| Registro | `/registro` | Crea `TblUsuario` con rol Cliente y su fila en `TblCliente` |
+| Mi cuenta | `/micuenta` | Pedidos, fórmulas y favoritos del cliente, con su rol visible |
+
+El carrito **no se guarda en la base de datos**: `TblPedido` exige un cliente y
+un farmacéutico que aún no se conocen mientras la persona solo mira el catálogo.
+Al confirmar, el carrito se traduce a un `TblPedido` en estado `PENDIENTE`, sus
+`TblLineaPedido` y el primer registro de `TblHistorial`. El farmacéutico se
+asigna automáticamente porque su columna no admite nulos.
+
+## Los 13 módulos de gestión y su tabla
+
+Zona reservada a los perfiles Administrador y Farmacéutico.
 
 | Módulo | Ruta | Tabla |
 |---|---|---|
@@ -146,6 +177,12 @@ Las contraseñas se almacenan cifradas con SHA‐256; nunca en texto plano.
 - El sistema avisa si se intenta aprobar dos veces el pago del mismo pedido.
 - Correos de usuario, nombres de rol, códigos SKU, registros profesionales y
   proveedores de pago no se pueden duplicar.
+- El carrito no acepta más unidades de las que hay en inventario, y el stock se
+  vuelve a comprobar al confirmar, porque pudo cambiar mientras el cliente compraba.
+- Quien se registra en la tienda recibe siempre el rol Cliente. Los perfiles de
+  Farmacéutico y Administrador solo se asignan desde el módulo de Usuarios.
+- El acceso se controla por rol: un cliente autenticado que escriba la dirección
+  de un módulo de gestión es devuelto a su cuenta.
 - La edad del cliente se calcula a partir de su fecha de nacimiento.
 - El inventario alerta los lotes que vencen en 30 días o menos.
 
@@ -157,6 +194,25 @@ mvn clean package
 
 Copiar `target/farmaweb.war` a la carpeta `webapps` de Tomcat 10.1 y abrir
 <http://localhost:8080/farmaweb>.
+
+## Dos decisiones técnicas que conviene conocer
+
+**El modelo relacional se amplió.** `TblProducto` tenía 6 columnas en la
+evidencia GA6‐220501096‐AA2‐EV02 y ahora tiene 8: se agregaron `Pro_Categoria`,
+para poder navegar el catálogo por secciones, y `Pro_Imagen`, que guarda el
+nombre del archivo ubicado en `webapp/img/productos/`. Ambas admiten nulos, así
+que un producto sin clasificar o sin foto sigue siendo válido; cuando no hay
+imagen el catálogo dibuja un recuadro con la letra inicial del producto.
+**El diagrama y el documento de la evidencia GA6 deben actualizarse para que
+coincidan.**
+
+**El dinero no se formatea con `fmt:formatNumber`.** Esa etiqueta de JSTL no
+surtía efecto en este montaje y devolvía el valor sin formato, por ejemplo
+`24200.00` en lugar de `24.200`. El formato se resolvió en la capa de
+utilidades con la clase `FormatoMoneda`, que aplica la convención colombiana
+—punto como separador de miles y sin decimales— y expone los valores como
+propiedades de texto, por ejemplo `${carrito.totalTexto}`. Así el criterio de
+presentación del dinero queda en un solo lugar.
 
 ## Convenciones de código aplicadas
 
