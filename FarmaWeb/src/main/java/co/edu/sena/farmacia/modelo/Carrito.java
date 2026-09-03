@@ -152,6 +152,30 @@ public class Carrito implements Serializable {
     }
 
     /**
+     * Reune los renglones controlados a los que aun les falta la formula.
+     *
+     * @return productos que no se pueden comprar todavia
+     */
+    public List<ItemCarrito> obtenerItemsSinReceta() {
+        List<ItemCarrito> pendientes = new ArrayList<>();
+        for (ItemCarrito item : items) {
+            if (item.faltaReceta()) {
+                pendientes.add(item);
+            }
+        }
+        return pendientes;
+    }
+
+    /**
+     * Indica si el carrito se puede confirmar.
+     *
+     * @return true cuando algun medicamento controlado no tiene su formula
+     */
+    public boolean faltanRecetas() {
+        return !obtenerItemsSinReceta().isEmpty();
+    }
+
+    /**
      * @return true cuando el carrito no tiene renglones
      */
     public boolean estaVacio() {
@@ -188,6 +212,14 @@ public class Carrito implements Serializable {
 
     public boolean getConFormulaMedica() {
         return requiereFormulaMedica();
+    }
+
+    public boolean getRecetasPendientes() {
+        return faltanRecetas();
+    }
+
+    public List<ItemCarrito> getItemsSinReceta() {
+        return obtenerItemsSinReceta();
     }
     /** Subtotal del carrito con separador de miles. */
     public String getSubtotalTexto() {

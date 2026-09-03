@@ -135,9 +135,49 @@ Zona que no exige cuenta. Es la puerta de entrada del sistema.
 | Inicio | `/` o `/inicio` | Banner, categorías con su conteo y productos del catálogo |
 | Catálogo | `/catalogo` | Filtro por categoría (`?categoria=`) y buscador (`?q=`), ambos por GET |
 | Detalle de producto | `/producto?id=N` | Ficha, disponibilidad y aviso si requiere receta |
-| Carrito | `/carrito` | Vive en la sesión HTTP; agregar, actualizar, quitar y confirmar por POST |
+| Carrito | `/carrito` | Vive en la sesión HTTP; agregar, actualizar, quitar, adjuntar fórmula y confirmar por POST |
 | Registro | `/registro` | Crea `TblUsuario` con rol Cliente y su fila en `TblCliente` |
+| Pago | `/pago?idPedido=N` | Formas de pago y monto con que paga el cliente |
 | Mi cuenta | `/micuenta` | Pedidos, fórmulas y favoritos del cliente, con su rol visible |
+
+### Fórmula médica obligatoria
+
+Cuando el carrito contiene un producto con `Pro_RequiereReceta`, el sistema
+exige adjuntar la prescripción antes de confirmar. El formulario usa
+`enctype="multipart/form-data"` y el servlet declara `@MultipartConfig`.
+
+Se aceptan PDF, JPG y PNG hasta 5 MB. El archivo se guarda **fuera de la
+aplicación web**, en la carpeta que indica el parámetro `carpetaRecetas` de
+`web.xml`; si se deja vacío, se usa `farmaweb-recetas` en el directorio del
+usuario. La carpeta de la aplicación se borra en cada despliegue, así que los
+documentos no pueden vivir ahí. En la base de datos solo queda el nombre del
+archivo, en `For_Archivo`.
+
+La fila de `TblFormulaMedica` se crea **al confirmar el pedido**, no al subir
+el archivo, porque esa tabla exige un pedido que todavía no existe mientras la
+persona está en el carrito. Mientras tanto los datos viven en la sesión.
+
+Sin la fórmula el botón de confirmar no aparece, y si alguien envía el POST de
+confirmación directamente, la capa de lógica lo rechaza.
+
+### Formas de pago
+
+Al confirmar, el cliente pasa a `/pago`, donde escoge cómo pagar e indica el
+monto:
+
+| Medio | Estado de la transacción | Monto |
+|---|---|---|
+| PSE | `APROBADA` — pago en línea inmediato | Valor exacto |
+| Contraentrega efectivo | `PENDIENTE` — se recibe al entregar | Puede ser mayor; el sistema calcula el cambio |
+| Contraentrega datáfono | `PENDIENTE` — se recibe al entregar | Valor exacto |
+
+Los tres medios son filas de `TblPasarelaPago`, de modo que el administrador
+los habilita o los retira desde su módulo. Cada pago genera una fila en
+`TblTransaccionPago` y un pedido no se puede pagar dos veces.
+
+El pago **no reemplaza la validación del farmacéutico**: el pedido sigue en
+estado `PENDIENTE` hasta que el profesional lo revise, y así se le informa al
+cliente.
 
 El carrito **no se guarda en la base de datos**: `TblPedido` exige un cliente y
 un farmacéutico que aún no se conocen mientras la persona solo mira el catálogo.
@@ -183,6 +223,10 @@ Zona reservada a los perfiles Administrador y Farmacéutico.
   Farmacéutico y Administrador solo se asignan desde el módulo de Usuarios.
 - El acceso se controla por rol: un cliente autenticado que escriba la dirección
   de un módulo de gestión es devuelto a su cuenta.
+- No se puede confirmar un pedido con medicamentos controlados sin adjuntar su
+  fórmula médica.
+- El monto del pago debe cubrir el total; con PSE y datáfono debe ser exacto.
+- Un cliente solo puede ver y pagar sus propios pedidos, no los de otros.
 - La edad del cliente se calcula a partir de su fecha de nacimiento.
 - El inventario alerta los lotes que vencen en 30 días o menos.
 

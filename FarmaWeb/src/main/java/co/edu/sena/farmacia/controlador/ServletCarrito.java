@@ -9,11 +9,14 @@ import co.edu.sena.farmacia.logica.ServicioRegistro;
 import co.edu.sena.farmacia.modelo.Carrito;
 import co.edu.sena.farmacia.modelo.Cliente;
 import co.edu.sena.farmacia.modelo.Usuario;
+import co.edu.sena.farmacia.util.AlmacenRecetas;
 import co.edu.sena.farmacia.util.ConversorDatos;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 /**
  * Controlador del carrito de compras.
@@ -24,8 +27,15 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * El carrito es publico: se puede armar sin cuenta. Solo la confirmacion
  * exige que el visitante se haya registrado o haya ingresado.
+ *
+ * La anotacion MultipartConfig habilita la recepcion de archivos, que se
+ * necesita para adjuntar la formula medica de los medicamentos controlados.
  */
 @WebServlet(name = "ServletCarrito", urlPatterns = {"/carrito"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = AlmacenRecetas.TAMANO_MAXIMO_BYTES,
+        maxRequestSize = AlmacenRecetas.TAMANO_MAXIMO_BYTES * 2)
 public class ServletCarrito extends ServletBase {
 
     private static final long serialVersionUID = 1L;
@@ -69,6 +79,13 @@ public class ServletCarrito extends ServletBase {
                 carrito.vaciar();
                 publicarExito(peticion, "Su carrito quedo vacio.");
 
+            } else if ("adjuntarreceta".equals(accion)) {
+                adjuntarReceta(peticion, carrito);
+
+            } else if ("quitarreceta".equals(accion)) {
+                servicioCarrito.quitarReceta(carrito, leerEntero(peticion, "idProducto"));
+                publicarExito(peticion, "La formula medica fue retirada. Adjunte otra para continuar.");
+
             } else if ("confirmar".equals(accion)) {
                 confirmar(peticion, respuesta, carrito);
                 return;
@@ -100,6 +117,29 @@ public class ServletCarrito extends ServletBase {
     }
 
     /**
+     * Recibe el archivo de la formula medica y lo asocia al renglon.
+     *
+     * @param peticion peticion multipart con el archivo y la fecha
+     * @param carrito carrito de la sesion
+     */
+    private void adjuntarReceta(HttpServletRequest peticion, Carrito carrito)
+            throws IOException, ServletException {
+
+        int idProducto = leerEntero(peticion, "idProducto");
+        Part archivo = peticion.getPart("archivoReceta");
+
+        String carpeta = getServletContext().getInitParameter("carpetaRecetas");
+        String nombreGuardado = AlmacenRecetas.guardar(archivo, idProducto, carpeta);
+
+        String nombreProducto = servicioCarrito.adjuntarReceta(carrito, idProducto, nombreGuardado,
+                ConversorDatos.aFecha(peticion.getParameter("fechaPrescripcion"),
+                        "fecha de la formula"));
+
+        publicarExito(peticion, "La formula medica de " + nombreProducto
+                + " quedo adjunta. Ya puede confirmar su pedido.");
+    }
+
+    /**
      * Confirma la compra si hay sesion; si no, lleva al registro.
      *
      * @param peticion peticion HTTP en curso
@@ -126,9 +166,9 @@ public class ServletCarrito extends ServletBase {
             }
 
             int idPedido = servicioCarrito.confirmarPedido(carrito, cliente.getIdCliente());
-            publicarExito(peticion, "Su pedido numero " + idPedido
-                    + " quedo registrado y esta pendiente de confirmacion por el farmaceutico.");
-            redirigirAlModulo(peticion, respuesta, "micuenta");
+
+            // El paso siguiente es escoger la forma de pago
+            respuesta.sendRedirect(peticion.getContextPath() + "/pago?idPedido=" + idPedido);
 
         } catch (RuntimeException error) {
             publicarErrorDeExcepcion(peticion, error);

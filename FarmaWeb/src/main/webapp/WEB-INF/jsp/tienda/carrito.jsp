@@ -136,14 +136,16 @@
                     <span>$${carrito.totalTexto}</span>
                 </div>
 
-                <c:if test="${carrito.conFormulaMedica}">
-                    <div class="alerta alerta-advertencia" role="alert" style="margin-top:16px;">
-                        Su carrito tiene medicamentos controlados. Deberá adjuntar la
-                        fórmula médica para que el farmacéutico autorice el despacho.
-                    </div>
-                </c:if>
-
                 <c:choose>
+                    <%-- Falta alguna formula medica: no se puede confirmar --%>
+                    <c:when test="${carrito.recetasPendientes}">
+                        <div class="alerta alerta-error" role="alert" style="margin-top:16px;">
+                            <strong>Falta la fórmula médica.</strong>
+                            Adjúntela más abajo para poder confirmar el pedido.
+                            Sin ella no se pueden comprar medicamentos controlados.
+                        </div>
+                    </c:when>
+
                     <c:when test="${empty sessionScope.usuarioSesion}">
                         <div class="acciones-formulario" style="margin-top:18px;">
                             <a class="boton" href="${raiz}/registro"
@@ -167,14 +169,106 @@
                         </form>
 
                         <p class="ayuda" style="margin-top:12px;">
-                            El pedido quedará en estado PENDIENTE hasta que un farmacéutico
-                            lo revise y lo confirme.
+                            En el paso siguiente escogerá la forma de pago. El pedido
+                            quedará en estado PENDIENTE hasta que un farmacéutico lo
+                            revise y lo confirme.
                         </p>
                     </c:otherwise>
                 </c:choose>
             </div>
 
         </div>
+
+        <%-- ------------------------------------------------------------------
+             Formulas medicas de los medicamentos controlados.
+
+             Cada producto controlado tiene su propio formulario de carga, con
+             enctype multipart/form-data, que es el unico que permite enviar
+             archivos por HTTP.
+             ------------------------------------------------------------------ --%>
+        <c:if test="${carrito.conFormulaMedica}">
+            <div class="tarjeta">
+                <h2>Fórmulas médicas</h2>
+                <p class="descripcion-modulo">
+                    Su carrito tiene medicamentos controlados. La normativa exige la
+                    prescripción del médico para dispensarlos, así que debe adjuntarla
+                    antes de confirmar el pedido. El farmacéutico la validará antes
+                    del despacho.
+                </p>
+
+                <c:forEach var="item" items="${carrito.items}">
+                    <c:if test="${item.requiereReceta}">
+
+                        <div class="${item.conReceta ? 'aviso-invitado' : 'campo-rol'}"
+                             style="margin-bottom:18px;">
+
+                            <strong><c:out value="${item.nombre}"/></strong>
+                            <span class="etiqueta etiqueta-advertencia">Controlado</span>
+
+                            <c:choose>
+                                <%-- Ya tiene la formula adjunta --%>
+                                <c:when test="${item.conReceta}">
+                                    <p style="margin:10px 0 6px;">
+                                        <span class="etiqueta etiqueta-disponible">Fórmula adjunta</span>
+                                        <span class="ayuda">
+                                            Archivo <c:out value="${item.archivoReceta}"/>,
+                                            expedida el ${item.fechaPrescripcion}
+                                        </span>
+                                    </p>
+
+                                    <form action="${raiz}/carrito" method="post">
+                                        <input type="hidden" name="accion" value="quitarReceta">
+                                        <input type="hidden" name="idProducto"
+                                               value="${item.idProducto}">
+                                        <button type="submit" class="boton-secundario boton-pequeno">
+                                            Cambiar la fórmula</button>
+                                    </form>
+                                </c:when>
+
+                                <%-- Falta la formula: formulario de carga --%>
+                                <c:otherwise>
+                                    <form action="${raiz}/carrito" method="post"
+                                          enctype="multipart/form-data">
+                                        <input type="hidden" name="accion" value="adjuntarReceta">
+                                        <input type="hidden" name="idProducto"
+                                               value="${item.idProducto}">
+
+                                        <div class="rejilla-formulario" style="margin-top:12px;">
+                                            <div class="campo">
+                                                <label for="archivo-${item.idProducto}">
+                                                    Archivo de la fórmula médica</label>
+                                                <input type="file" id="archivo-${item.idProducto}"
+                                                       name="archivoReceta" required
+                                                       accept=".pdf,.jpg,.jpeg,.png">
+                                                <span class="ayuda">
+                                                    Formatos PDF, JPG o PNG. Máximo 5 MB.
+                                                </span>
+                                            </div>
+
+                                            <div class="campo">
+                                                <label for="fecha-${item.idProducto}">
+                                                    Fecha en que se expidió</label>
+                                                <input type="date" id="fecha-${item.idProducto}"
+                                                       name="fechaPrescripcion" required>
+                                                <span class="ayuda">
+                                                    No puede ser posterior a hoy.
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="acciones-formulario">
+                                            <button type="submit">Adjuntar fórmula</button>
+                                        </div>
+                                    </form>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                    </c:if>
+                </c:forEach>
+            </div>
+        </c:if>
+
     </c:otherwise>
 </c:choose>
 

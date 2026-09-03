@@ -24,6 +24,17 @@
         <param-value>2</param-value>
     </context-param>
 
+    <!--
+        Carpeta donde se guardan los archivos de las formulas medicas que
+        adjuntan los clientes. Queda fuera de la aplicacion web porque esa
+        carpeta se borra en cada despliegue. Si se deja vacia, el sistema usa
+        la subcarpeta farmaweb-recetas del directorio del usuario.
+    -->
+    <context-param>
+        <param-name>carpetaRecetas</param-name>
+        <param-value></param-value>
+    </context-param>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

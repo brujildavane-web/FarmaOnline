@@ -284,8 +284,15 @@ INSERT INTO TblLoteProducto
 -- El producto 8, Cepillo dental, se deja a proposito sin lote para que el
 -- catalogo muestre el estado Agotado en rojo y se pueda verificar esa regla.
 
--- Pasarelas de pago
+-- Medios de pago.
+--
+-- Los tres primeros son los que la tienda ofrece al cliente al confirmar su
+-- pedido; en la contraentrega no hay proveedor externo, de modo que la llave
+-- publica queda marcada como no aplicable.
 INSERT INTO TblPasarelaPago (Pas_NombreProveedor, Pas_Apikeypublic) VALUES
+    ('PSE', 'pse_pub_2026_ach_colombia'),
+    ('Contraentrega efectivo', 'no-aplica-contraentrega'),
+    ('Contraentrega datafono', 'no-aplica-contraentrega'),
     ('PayU', 'pk_test_PayU_4Vj8k2026'),
     ('MercadoPago', 'APP_USR_pub_2026_mp001'),
     ('Stripe', 'pk_test_51StripeDemo2026');
@@ -316,7 +323,9 @@ INSERT INTO TblHistorial (TblPed_PedIdPedido, His_Fecha, TblPro_ProIdProducto, H
     (1, CURDATE(), 1, 'ENTREGADO'),
     (2, CURDATE(), 3, 'PENDIENTE');
 
--- Transacciones de pago
+-- Transacciones de pago.
+-- El pedido 1 se pago en linea por PSE y quedo aprobado; el pedido 2 se paga
+-- en efectivo al recibirlo, por eso su transaccion queda pendiente.
 INSERT INTO TblTransaccionPago
     (Tran_FechaPago, Tran_Valor, Tran_EstadoTransaccion, TblPed_PedIdPedido, TblPas_PasIdPasarela)
 VALUES

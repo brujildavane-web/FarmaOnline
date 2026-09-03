@@ -5,12 +5,14 @@ import java.time.LocalDateTime;
 
 import co.edu.sena.farmacia.modelo.Carrito;
 import co.edu.sena.farmacia.modelo.Farmaceutico;
+import co.edu.sena.farmacia.modelo.FormulaMedica;
 import co.edu.sena.farmacia.modelo.Historial;
 import co.edu.sena.farmacia.modelo.ItemCarrito;
 import co.edu.sena.farmacia.modelo.LineaPedido;
 import co.edu.sena.farmacia.modelo.Pedido;
 import co.edu.sena.farmacia.modelo.Producto;
 import co.edu.sena.farmacia.persistencia.FarmaceuticoDao;
+import co.edu.sena.farmacia.persistencia.FormulaMedicaDao;
 import co.edu.sena.farmacia.persistencia.HistorialDao;
 import co.edu.sena.farmacia.persistencia.LineaPedidoDao;
 import co.edu.sena.farmacia.persistencia.PedidoDao;
@@ -34,6 +36,7 @@ public class ServicioCarrito {
     private final LineaPedidoDao lineaPedidoDao = new LineaPedidoDao();
     private final FarmaceuticoDao farmaceuticoDao = new FarmaceuticoDao();
     private final HistorialDao historialDao = new HistorialDao();
+    private final FormulaMedicaDao formulaMedicaDao = new FormulaMedicaDao();
 
     /**
      * Agrega un producto al carrito verificando que haya inventario.
@@ -84,6 +87,56 @@ public class ServicioCarrito {
     }
 
     /**
+     * Adjunta la formula medica a un renglon del carrito.
+     *
+     * El archivo ya fue guardado en disco; aqui solo se registra su nombre y
+     * la fecha de prescripcion en la sesion, porque TblFormulaMedica exige un
+     * pedido que todavia no existe.
+     *
+     * @param carrito carrito de la sesion
+     * @param idProducto producto controlado al que corresponde la formula
+     * @param nombreArchivo nombre con que quedo guardado el archivo
+     * @param fechaPrescripcion fecha en que el medico expidio la formula
+     * @return nombre del producto, para el mensaje de confirmacion
+     */
+    public String adjuntarReceta(Carrito carrito, int idProducto, String nombreArchivo,
+            LocalDate fechaPrescripcion) {
+
+        ItemCarrito item = carrito.buscarItem(idProducto);
+        if (item == null) {
+            throw new ExcepcionNegocio("El producto no esta en su carrito.");
+        }
+        if (!item.isRequiereReceta()) {
+            throw new ExcepcionNegocio(
+                    item.getNombre() + " es de venta libre y no necesita formula medica.");
+        }
+        if (fechaPrescripcion == null) {
+            throw new ExcepcionNegocio("Debe indicar la fecha en que se expidio la formula.");
+        }
+        if (fechaPrescripcion.isAfter(LocalDate.now())) {
+            throw new ExcepcionNegocio("La fecha de la formula no puede ser posterior a hoy.");
+        }
+
+        item.setArchivoReceta(nombreArchivo);
+        item.setFechaPrescripcion(fechaPrescripcion);
+        return item.getNombre();
+    }
+
+    /**
+     * Quita la formula adjunta de un renglon, para poder reemplazarla.
+     *
+     * @param carrito carrito de la sesion
+     * @param idProducto producto al que se le retira la formula
+     */
+    public void quitarReceta(Carrito carrito, int idProducto) {
+        ItemCarrito item = carrito.buscarItem(idProducto);
+        if (item != null) {
+            item.setArchivoReceta(null);
+            item.setFechaPrescripcion(null);
+        }
+    }
+
+    /**
      * Confirma la compra: crea el pedido, sus lineas y el primer registro
      * del historial, y deja el carrito vacio.
      *
@@ -105,6 +158,7 @@ public class ServicioCarrito {
         }
 
         verificarInventarioCompleto(carrito);
+        verificarRecetasCompletas(carrito);
 
         Pedido pedido = new Pedido();
         pedido.setFecha(LocalDateTime.now());
@@ -117,6 +171,7 @@ public class ServicioCarrito {
 
         int idPedido = ubicarPedidoRecienCreado(idCliente);
         guardarLineas(carrito, idPedido);
+        guardarFormulasMedicas(carrito, idPedido);
         registrarHistorial(carrito, idPedido);
 
         carrito.vaciar();
@@ -134,6 +189,52 @@ public class ServicioCarrito {
                 throw new ExcepcionNegocio("El inventario de " + item.getNombre()
                         + " cambio: solo quedan " + disponible + " unidades. Ajuste su carrito.");
             }
+        }
+    }
+
+    /**
+     * Impide confirmar la compra si algun medicamento controlado no tiene su
+     * formula medica adjunta.
+     *
+     * Es la regla que exige receta valida antes de despachar medicamentos
+     * controlados, aplicada en el momento de la compra.
+     */
+    private void verificarRecetasCompletas(Carrito carrito) {
+        List<ItemCarrito> pendientes = carrito.obtenerItemsSinReceta();
+
+        if (pendientes.isEmpty()) {
+            return;
+        }
+
+        StringBuilder nombres = new StringBuilder();
+        for (ItemCarrito item : pendientes) {
+            if (nombres.length() > 0) {
+                nombres.append(", ");
+            }
+            nombres.append(item.getNombre());
+        }
+
+        throw new ExcepcionNegocio("Debe adjuntar la formula medica de: " + nombres
+                + ". Sin ella no se puede comprar un medicamento controlado.");
+    }
+
+    /**
+     * Crea una fila de TblFormulaMedica por cada medicamento controlado del
+     * pedido, con el archivo que el cliente adjunto en el carrito.
+     */
+    private void guardarFormulasMedicas(Carrito carrito, int idPedido) {
+        for (ItemCarrito item : carrito.getItems()) {
+            if (!item.isRequiereReceta()) {
+                continue;
+            }
+
+            FormulaMedica formula = new FormulaMedica();
+            formula.setIdPedido(idPedido);
+            formula.setIdProducto(item.getIdProducto());
+            formula.setArchivo(item.getArchivoReceta());
+            formula.setFechaPrescripcion(item.getFechaPrescripcion());
+
+            formulaMedicaDao.insertar(formula);
         }
     }
 

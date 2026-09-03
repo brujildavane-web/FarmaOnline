@@ -3,6 +3,7 @@ package co.edu.sena.farmacia.modelo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import co.edu.sena.farmacia.util.FormatoMoneda;
 
 /**
@@ -22,6 +23,14 @@ public class ItemCarrito implements Serializable {
     private BigDecimal precio;
     private double cantidad;
     private boolean requiereReceta;
+
+    /**
+     * Datos de la formula medica que el cliente adjunta cuando el producto
+     * es controlado. Se conservan en la sesion hasta que se confirma el
+     * pedido, porque TblFormulaMedica exige un pedido que aun no existe.
+     */
+    private String archivoReceta;
+    private LocalDate fechaPrescripcion;
 
     public ItemCarrito() {
     }
@@ -111,6 +120,48 @@ public class ItemCarrito implements Serializable {
     /** Cantidad sin decimales. */
     public String getCantidadTexto() {
         return FormatoMoneda.enUnidades(cantidad);
+    }
+
+    /**
+     * Indica si el renglon ya tiene su formula medica adjunta.
+     *
+     * @return true cuando hay un archivo registrado
+     */
+    public boolean tieneReceta() {
+        return archivoReceta != null && !archivoReceta.trim().isEmpty();
+    }
+
+    /**
+     * Indica si al renglon le falta la formula medica para poder comprarse.
+     *
+     * @return true cuando el producto es controlado y no tiene archivo
+     */
+    public boolean faltaReceta() {
+        return requiereReceta && !tieneReceta();
+    }
+
+    public String getArchivoReceta() {
+        return archivoReceta;
+    }
+
+    public void setArchivoReceta(String archivoReceta) {
+        this.archivoReceta = archivoReceta;
+    }
+
+    public LocalDate getFechaPrescripcion() {
+        return fechaPrescripcion;
+    }
+
+    public void setFechaPrescripcion(LocalDate fechaPrescripcion) {
+        this.fechaPrescripcion = fechaPrescripcion;
+    }
+
+    public boolean getConReceta() {
+        return tieneReceta();
+    }
+
+    public boolean getSinReceta() {
+        return faltaReceta();
     }
 
 }

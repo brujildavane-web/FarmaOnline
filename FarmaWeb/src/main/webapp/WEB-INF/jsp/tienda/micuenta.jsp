@@ -111,6 +111,7 @@
                             <th scope="col">Total</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Atiende</th>
+                            <th scope="col">Pago</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,6 +127,11 @@
                                     </span>
                                 </td>
                                 <td><c:out value="${pedido.nombreFarmaceutico}"/></td>
+                                <td>
+                                    <a class="boton boton-secundario boton-pequeno"
+                                       href="${raiz}/pago?idPedido=${pedido.idPedido}">
+                                        Ver el pago</a>
+                                </td>
                             </tr>
                         </c:forEach>
                     </tbody>

@@ -22,7 +22,8 @@ import jakarta.servlet.http.HttpSession;
  *
  *   Publica       la tienda: inicio, catalogo, detalle de producto, carrito,
  *                 ingreso y registro. No exige cuenta.
- *   Del cliente   mi cuenta y la confirmacion del pedido. Exige sesion.
+ *   Del cliente   mi cuenta, el pago del pedido y la confirmacion de la
+ *                 compra. Exige sesion abierta.
  *   De gestion    el tablero y los trece modulos. Exige sesion y ademas el
  *                 rol Administrador o Farmaceutico.
  *

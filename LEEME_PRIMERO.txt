@@ -173,7 +173,33 @@ por ejemplo C:\ModuloFarma
       Detalle de producto    /producto?id=N
       Carrito                /carrito
       Crear cuenta           /registro
+      Pago del pedido        /pago?idPedido=N
       Mi cuenta              /micuenta
+
+
+-------------------------------------------------------------------------------
+  FORMULA MEDICA Y FORMAS DE PAGO
+-------------------------------------------------------------------------------
+
+Los medicamentos marcados como controlados exigen adjuntar la formula medica
+en el carrito antes de poder confirmar el pedido. Se aceptan archivos PDF,
+JPG o PNG de hasta 5 MB.
+
+Los archivos NO se guardan dentro de la aplicacion, porque esa carpeta se
+borra en cada despliegue. Se guardan en la carpeta que indica el parametro
+carpetaRecetas de FarmaWeb\src\main\webapp\WEB-INF\web.xml. Si se deja
+vacio, se usa la subcarpeta farmaweb-recetas del directorio del usuario.
+
+Al confirmar el pedido, el cliente escoge la forma de pago e indica el monto:
+
+      PSE                       Pago en linea. Queda aprobado de inmediato.
+                                Se exige el valor exacto.
+      Contraentrega efectivo    Se paga al recibir. Puede indicar un monto
+                                mayor y el sistema calcula el cambio.
+      Contraentrega datafono    Se paga al recibir con tarjeta. Valor exacto.
+
+En todos los casos el pedido queda en estado PENDIENTE hasta que un
+farmaceutico lo revise y lo confirme.
 
 
 -------------------------------------------------------------------------------
