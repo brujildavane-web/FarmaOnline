@@ -20,7 +20,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><c:out value="${tituloPagina}"/> | Farmacia en Línea</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/estilos.css?v=${initParam.versionRecursos}">
 </head>
 <body>
 
@@ -74,7 +75,11 @@
        class="${seccionActiva eq 'catalogo' and empty categoriaActiva ? 'activo' : ''}">Catálogo</a>
 
     <c:forEach var="categoria" items="${categorias}">
-        <a href="${raiz}/catalogo?categoria=${categoria}"
+        <%-- c:url codifica los espacios y tildes del nombre de la categoria --%>
+        <c:url var="enlaceCategoria" value="/catalogo">
+            <c:param name="categoria" value="${categoria}"/>
+        </c:url>
+        <a href="${enlaceCategoria}"
            class="${categoriaActiva eq categoria ? 'activo' : ''}">
             <c:out value="${categoria}"/>
         </a>

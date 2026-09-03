@@ -25,8 +25,11 @@
            href="${raiz}/catalogo">Todas</a>
 
         <c:forEach var="categoria" items="${categorias}">
+            <c:url var="enlaceCategoria" value="/catalogo">
+                <c:param name="categoria" value="${categoria}"/>
+            </c:url>
             <a class="boton ${categoriaActiva eq categoria ? '' : 'boton-secundario'} boton-pequeno"
-               href="${raiz}/catalogo?categoria=${categoria}">
+               href="${enlaceCategoria}">
                 <c:out value="${categoria}"/>
             </a>
         </c:forEach>

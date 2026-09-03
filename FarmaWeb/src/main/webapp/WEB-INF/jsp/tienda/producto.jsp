@@ -14,8 +14,10 @@
 <p class="descripcion-modulo">
     <a href="${raiz}/catalogo">Catálogo</a>
     <c:if test="${not empty producto.categoria}">
-        &rsaquo; <a href="${raiz}/catalogo?categoria=${producto.categoria}">
-            <c:out value="${producto.categoria}"/></a>
+        <c:url var="enlaceCategoria" value="/catalogo">
+            <c:param name="categoria" value="${producto.categoria}"/>
+        </c:url>
+        &rsaquo; <a href="${enlaceCategoria}"><c:out value="${producto.categoria}"/></a>
     </c:if>
     &rsaquo; <c:out value="${producto.nombre}"/>
 </p>

@@ -18,7 +18,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><c:out value="${tituloPagina}"/> | Farmacia en Linea</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/estilos.css?v=${initParam.versionRecursos}">
 </head>
 <body>
 

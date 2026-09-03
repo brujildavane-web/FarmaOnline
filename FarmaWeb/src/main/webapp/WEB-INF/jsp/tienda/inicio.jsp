@@ -34,8 +34,21 @@
 <h2>Categorías</h2>
 <div class="rejilla-categorias">
     <c:forEach var="categoria" items="${categorias}">
-        <a class="categoria" href="${raiz}/catalogo?categoria=${categoria}">
-            <span class="icono" aria-hidden="true">&#128138;</span>
+        <c:url var="enlaceCategoria" value="/catalogo">
+            <c:param name="categoria" value="${categoria}"/>
+        </c:url>
+        <a class="categoria" href="${enlaceCategoria}">
+            <%-- Cada categoria lleva su propio icono --%>
+            <span class="icono" aria-hidden="true">
+                <c:choose>
+                    <c:when test="${categoria eq 'Medicamentos'}">&#128138;</c:when>
+                    <c:when test="${categoria eq 'Cuidado personal'}">&#129380;</c:when>
+                    <c:when test="${categoria eq 'Botiquin'}">&#129657;</c:when>
+                    <c:when test="${categoria eq 'Bebes'}">&#127868;</c:when>
+                    <c:when test="${categoria eq 'Nutricion'}">&#129367;</c:when>
+                    <c:otherwise>&#128138;</c:otherwise>
+                </c:choose>
+            </span>
             <c:out value="${categoria}"/>
             <span class="ayuda" style="display:block;">
                 <c:choose>

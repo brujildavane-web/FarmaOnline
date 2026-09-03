@@ -13,16 +13,35 @@
         Aqui solo queda la configuracion general de la aplicacion.
     -->
 
+    <!--
+        Version de los recursos estaticos. Se agrega como parametro al
+        enlace de la hoja de estilos para que el navegador descargue la
+        version nueva en lugar de reutilizar la que tenga en cache.
+        Debe subirse cada vez que se modifique estilos.css.
+    -->
+    <context-param>
+        <param-name>versionRecursos</param-name>
+        <param-value>2</param-value>
+    </context-param>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
-    <!-- La sesion del usuario expira tras 30 minutos de inactividad -->
+    <!--
+        La sesion del usuario expira tras 30 minutos de inactividad.
+
+        El seguimiento se limita a COOKIE a proposito. Si se permite el modo
+        URL, el contenedor agrega ;jsessionid=... a los enlaces generados con
+        c:url, y el identificador de sesion queda visible en la barra de
+        direcciones, en los marcadores y en los registros del servidor.
+    -->
     <session-config>
         <session-timeout>30</session-timeout>
         <cookie-config>
             <http-only>true</http-only>
         </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
     <!-- Todas las paginas JSP se sirven en UTF-8 para respetar las tildes -->
