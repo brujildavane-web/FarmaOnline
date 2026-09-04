@@ -17,6 +17,14 @@
     Encabezado de las compras realizadas por los clientes y atendidas por un farmaceutico.
 </p>
 
+<div class="alerta alerta-advertencia" role="note">
+    El estado mueve el inventario. Al pasar el pedido a
+    <strong>CONFIRMADO</strong> las unidades salen de los lotes, empezando por
+    el mas proximo a vencer, y no se descuentan otra vez en EN CAMINO ni en
+    ENTREGADO. Si el pedido se pasa a <strong>ANULADO</strong>, las unidades
+    regresan al inventario.
+</div>
+
 <div class="tarjeta">
     <h2>${enEdicion ? 'Editar pedido' : 'Registrar pedido nuevo'}</h2>
 

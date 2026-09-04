@@ -44,8 +44,22 @@ public class LoteProductoDao implements DaoGenerico<LoteProducto> {
             "UPDATE TblLoteProducto SET LotP_FechaVencimiento = ?, LotP_RegistroSanitario = ?, "
             + "LotP_StockActual = ?, LotP_Marca = ?, TblPro_ProIdProducto = ? WHERE LotP_IdLote = ?";
 
+    /**
+     * Lotes de un producto que todavia se pueden despachar, del mas proximo
+     * a vencer al mas lejano. Un lote vencido no se puede vender, por lo que
+     * queda fuera de la consulta.
+     */
+    private static final String SQL_LISTAR_VIGENTES_POR_PRODUCTO =
+            "SELECT " + COLUMNAS + " FROM TblLoteProducto l "
+            + "INNER JOIN TblProducto p ON p.Pro_IdProducto = l.TblPro_ProIdProducto "
+            + "WHERE l.TblPro_ProIdProducto = ? AND l.LotP_FechaVencimiento >= CURDATE() "
+            + "ORDER BY l.LotP_FechaVencimiento";
+
     private static final String SQL_DESCONTAR_STOCK =
             "UPDATE TblLoteProducto SET LotP_StockActual = LotP_StockActual - ? WHERE LotP_IdLote = ?";
+
+    private static final String SQL_REGRESAR_STOCK =
+            "UPDATE TblLoteProducto SET LotP_StockActual = LotP_StockActual + ? WHERE LotP_IdLote = ?";
 
     private static final String SQL_ELIMINAR = "DELETE FROM TblLoteProducto WHERE LotP_IdLote = ?";
 
@@ -68,6 +82,19 @@ public class LoteProductoDao implements DaoGenerico<LoteProducto> {
      */
     public List<LoteProducto> listarPorProducto(int idProducto) {
         return ejecutarConsultaLista(SQL_LISTAR_POR_PRODUCTO, idProducto);
+    }
+
+    /**
+     * Consulta los lotes vigentes de un producto, sin los vencidos.
+     *
+     * El orden por fecha de vencimiento permite despachar primero lo que
+     * caduca antes, que es la practica habitual en una farmacia.
+     *
+     * @param idProducto identificador del producto
+     * @return lotes vigentes, del mas proximo a vencer al mas lejano
+     */
+    public List<LoteProducto> listarVigentesPorProducto(int idProducto) {
+        return ejecutarConsultaLista(SQL_LISTAR_VIGENTES_POR_PRODUCTO, idProducto);
     }
 
     @Override
@@ -129,6 +156,28 @@ public class LoteProductoDao implements DaoGenerico<LoteProducto> {
 
         } catch (SQLException error) {
             throw new ExcepcionPersistencia("No fue posible descontar el stock del lote.", error);
+        }
+    }
+
+    /**
+     * Devuelve unidades al stock de un lote.
+     *
+     * Se usa cuando un pedido que ya habia salido del inventario se anula:
+     * la mercancia regresa al lote y vuelve a estar disponible para vender.
+     *
+     * @param idLote identificador del lote afectado
+     * @param cantidad unidades que regresan al inventario
+     */
+    public void regresarStock(int idLote, double cantidad) {
+        try (Connection conexion = ConexionBaseDatos.obtenerConexion();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_REGRESAR_STOCK)) {
+
+            sentencia.setDouble(1, cantidad);
+            sentencia.setInt(2, idLote);
+            sentencia.executeUpdate();
+
+        } catch (SQLException error) {
+            throw new ExcepcionPersistencia("No fue posible devolver el stock al lote.", error);
         }
     }
 

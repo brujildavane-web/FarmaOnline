@@ -75,9 +75,10 @@ public class ServletPedido extends ServletBase {
 
         try {
             if ("cambiarestado".equals(accion)) {
-                servicioPedido.cambiarEstado(
+                String movimiento = servicioPedido.cambiarEstado(
                         leerEntero(peticion, "idPedido"), peticion.getParameter("estado"));
-                publicarExito(peticion, "El estado del pedido fue actualizado.");
+                publicarExito(peticion,
+                        ("El estado del pedido fue actualizado. " + movimiento).trim());
 
             } else if ("recalcular".equals(accion)) {
                 int idPedido = leerEntero(peticion, "idPedido");

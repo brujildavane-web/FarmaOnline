@@ -265,12 +265,19 @@ INSERT INTO TblProducto
 
 -- Lotes del inventario. Las fechas se calculan sobre la fecha actual para que
 -- el escenario de prueba siga siendo valido en cualquier momento.
+--
+-- El stock de los dos primeros productos ya viene descontado por el pedido 1,
+-- que se siembra en estado ENTREGADO: dos unidades del producto 1 salieron del
+-- lote mas proximo a vencer, que es el de la marca MK (40 - 2 = 38), y una
+-- unidad del producto 2 salio de su unico lote (90 - 1 = 89). De esta forma el
+-- inventario del escenario de prueba concuerda con los pedidos ya despachados,
+-- igual que cuando la aplicacion cambia el estado de un pedido.
 INSERT INTO TblLoteProducto
     (LotP_FechaVencimiento, LotP_RegistroSanitario, LotP_StockActual, LotP_Marca,
      TblPro_ProIdProducto) VALUES
     (DATE_ADD(CURDATE(), INTERVAL 540 DAY), 'INVIMA-2026M-0034', 150, 'Genfar', 1),
-    (DATE_ADD(CURDATE(), INTERVAL 20 DAY), 'INVIMA-2026M-0035', 40, 'MK', 1),
-    (DATE_ADD(CURDATE(), INTERVAL 400 DAY), 'INVIMA-2026M-0111', 90, 'Bayer', 2),
+    (DATE_ADD(CURDATE(), INTERVAL 20 DAY), 'INVIMA-2026M-0035', 38, 'MK', 1),
+    (DATE_ADD(CURDATE(), INTERVAL 400 DAY), 'INVIMA-2026M-0111', 89, 'Bayer', 2),
     (DATE_ADD(CURDATE(), INTERVAL 300 DAY), 'INVIMA-2026M-0220', 60, 'La Sante', 3),
     (DATE_ADD(CURDATE(), INTERVAL 730 DAY), 'INVIMA-2026M-0311', 120, 'Tecnoquimicas', 4),
     (DATE_ADD(CURDATE(), INTERVAL 250 DAY), 'INVIMA-2026M-0450', 200, 'Pisa', 5),

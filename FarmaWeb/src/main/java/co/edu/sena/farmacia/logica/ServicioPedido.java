@@ -24,6 +24,7 @@ public class ServicioPedido {
 
     private final PedidoDao pedidoDao = new PedidoDao();
     private final LineaPedidoDao lineaPedidoDao = new LineaPedidoDao();
+    private final ServicioMovimientoInventario servicioMovimiento = new ServicioMovimientoInventario();
 
     /**
      * Consulta los pedidos registrados.
@@ -69,12 +70,19 @@ public class ServicioPedido {
     }
 
     /**
-     * Cambia el estado de un pedido durante su seguimiento.
+     * Cambia el estado de un pedido durante su seguimiento y mueve el
+     * inventario cuando corresponde.
+     *
+     * El inventario se mueve antes de guardar el estado nuevo: si no alcanzan
+     * las existencias, el pedido se queda como estaba en lugar de aparecer
+     * despachado sin haber salido del estante.
      *
      * @param idPedido identificador del pedido
      * @param estadoNuevo estado al que pasa el pedido
+     * @return texto que describe el movimiento de inventario, vacio si el
+     *         cambio de estado no movio existencias
      */
-    public void cambiarEstado(int idPedido, String estadoNuevo) {
+    public String cambiarEstado(int idPedido, String estadoNuevo) {
         if (ConversorDatos.estaVacio(estadoNuevo)) {
             throw new ExcepcionNegocio("Debe indicar el estado del pedido.");
         }
@@ -84,7 +92,12 @@ public class ServicioPedido {
             throw new ExcepcionNegocio("El estado " + estadoNuevo + " no es valido para un pedido.");
         }
 
+        String estadoAnterior = consultarPorId(idPedido).getEstado();
+        String movimiento = servicioMovimiento.aplicarCambioDeEstado(
+                idPedido, estadoAnterior, estado);
+
         pedidoDao.actualizarEstado(idPedido, estado);
+        return movimiento;
     }
 
     /**

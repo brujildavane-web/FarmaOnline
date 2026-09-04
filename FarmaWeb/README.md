@@ -255,6 +255,48 @@ Cuando el pedido ya tiene un pago registrado, aparece la advertencia marcada
 con asterisco: **si el pago fue por PSE, el reembolso depende de la entidad
 bancaria** y de sus tiempos; si fue contraentrega, no se cobró nada.
 
+## El estado del pedido mueve el inventario
+
+Un pedido recién confirmado por el cliente queda en `PENDIENTE` y todavía no
+toca el inventario: falta que el farmacéutico revise la fórmula médica. La
+clase `logica/ServicioMovimientoInventario.java` es la que mueve las
+existencias cuando el pedido cruza la frontera entre *sigue en el estante* y
+*ya salió*:
+
+| Estado | ¿Las unidades cuentan como existencias? |
+|---|---|
+| `PENDIENTE` | Sí, siguen en el estante |
+| `CONFIRMADO` | No, ya salieron |
+| `EN CAMINO` | No |
+| `ENTREGADO` | No |
+| `ANULADO` | Sí, regresaron |
+
+Lo que se compara no es el estado nuevo por sí solo, sino si el pedido cambió
+de lado. Así un pedido que recorre `CONFIRMADO`, `EN CAMINO` y `ENTREGADO`
+descuenta en el primer paso y **no** en los tres. Si después se anula, las
+unidades regresan; y si se vuelve a confirmar, salen otra vez.
+
+Se descuenta desde `CONFIRMADO` y no solo al entregar porque, cuando el
+farmacéutico confirma, ya apartó el producto para ese cliente: dejarlo en el
+inventario permitiría prometer dos veces la misma unidad.
+
+Detalles de la implementación:
+
+- Las unidades salen del **lote más próximo a vencer** y siguen con el
+  siguiente cuando el primero no alcanza, que es la práctica habitual en una
+  farmacia para no dejar vencer la mercancía. Los lotes vencidos quedan fuera.
+- Antes de tocar el primer lote se comprueba que alcance para **todos** los
+  renglones. Si falta stock de uno, no se mueve nada y el pedido se queda en el
+  estado que tenía, con el aviso de cuánto pide y cuánto hay.
+- El detalle del pedido no guarda de qué lote salió cada unidad, así que la
+  devolución entra al lote vigente más próximo a vencer. El total por producto
+  queda exacto, que es lo que consultan la tienda y el reporte de inventario.
+- La cancelación que hace el propio cliente desde **Mis pedidos** pasa por el
+  mismo servicio. En la práctica no devuelve nada, porque el cliente solo puede
+  cancelar mientras el pedido siga `PENDIENTE` y en ese estado las unidades
+  nunca salieron; pero al compartir el servicio, la regla no depende de por
+  dónde se cambie el estado.
+
 ## Reportes del administrador
 
 Ruta `/reportes`, con dos vistas que se escogen por GET con `?tipo=`. Son
@@ -310,6 +352,7 @@ hace mejor. Los umbrales viven como constantes en `ServicioReporte`.
 - El monto del pago debe cubrir el total; con PSE y datáfono debe ser exacto.
 - Un cliente solo puede ver, pagar, editar o cancelar sus propios pedidos.
 - Un pedido solo se puede modificar o cancelar mientras esté `PENDIENTE`.
+- El estado del pedido mueve el inventario, y lo mueve una sola vez.
 - El total del pedido se recalcula con IVA cada vez que cambia su detalle, con
   el mismo criterio del carrito.
 - Los pagos por PSE quedan `PENDIENTE`: sin convenio con ACH no se puede dar
