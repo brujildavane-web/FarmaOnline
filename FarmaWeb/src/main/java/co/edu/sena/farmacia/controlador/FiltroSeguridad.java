@@ -22,10 +22,13 @@ import jakarta.servlet.http.HttpSession;
  *
  *   Publica       la tienda: inicio, catalogo, detalle de producto, carrito,
  *                 ingreso y registro. No exige cuenta.
- *   Del cliente   mi cuenta, el pago del pedido y la confirmacion de la
- *                 compra. Exige sesion abierta.
- *   De gestion    el tablero y los trece modulos. Exige sesion y ademas el
- *                 rol Administrador o Farmaceutico.
+ *   Del cliente   mi cuenta, la gestion de sus pedidos, el pago, la salida
+ *                 al portal de PSE y la confirmacion de la compra. Exige
+ *                 sesion abierta.
+ *   De gestion    el tablero, los trece modulos y los reportes. Exige
+ *                 sesion y ademas el rol Administrador o Farmaceutico. Los
+ *                 reportes agregan su propia restriccion: son exclusivos del
+ *                 Administrador.
  *
  * La verificacion del rol es indispensable: sin ella un cliente autenticado
  * podria abrir el modulo de usuarios simplemente escribiendo la direccion.
@@ -43,7 +46,7 @@ public class FiltroSeguridad implements Filter {
     private static final List<String> RUTAS_DE_GESTION = Arrays.asList(
             "/panel", "/roles", "/usuarios", "/clientes", "/farmaceuticos", "/productos",
             "/lotes", "/favoritos", "/pedidos", "/lineas", "/formulas", "/historial",
-            "/pasarelas", "/transacciones");
+            "/pasarelas", "/transacciones", "/reportes");
 
     @Override
     public void doFilter(ServletRequest peticionGenerica, ServletResponse respuestaGenerica,

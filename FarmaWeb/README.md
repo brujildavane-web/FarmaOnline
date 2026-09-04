@@ -205,6 +205,53 @@ Zona reservada a los perfiles Administrador y Farmacéutico.
 | Pasarelas de pago | `/pasarelas` | `TblPasarelaPago` |
 | Transacciones | `/transacciones` | `TblTransaccionPago` |
 
+## Gestión de pedidos por el propio cliente
+
+Desde **Mi cuenta**, el cliente entra a `/mipedido?id=N` y, mientras el pedido
+siga en estado `PENDIENTE`, puede cambiar cantidades, retirar productos o
+cancelarlo. Si retira el último producto, el pedido se cancela solo: un pedido
+sin productos no tiene sentido.
+
+Cancelar **no borra** el pedido: lo deja en `ANULADO` y registra la
+cancelación en `TblHistorial`, para conservar la trazabilidad. Un pedido
+`ANULADO` no cuenta como venta en los reportes.
+
+Cuando el pedido ya tiene un pago registrado, aparece la advertencia marcada
+con asterisco: **si el pago fue por PSE, el reembolso depende de la entidad
+bancaria** y de sus tiempos; si fue contraentrega, no se cobró nada.
+
+## Reportes del administrador
+
+Ruta `/reportes`, con dos vistas que se escogen por GET con `?tipo=`. Son
+**exclusivas del rol Administrador**: el farmacéutico atiende pedidos y
+fórmulas, no analiza el negocio. Si intenta entrar, el sistema lo devuelve al
+tablero, y la entrada del menú no se le muestra.
+
+**Reporte de ventas** (`?tipo=ventas`) — para análisis del negocio:
+
+- Indicadores: total facturado, pedidos vendidos, valor promedio por pedido y
+  unidades despachadas.
+- Los diez productos de mayor rotación, con unidades y valor vendido.
+- Ventas por categoría del catálogo.
+- Evolución de las ventas mes a mes.
+- Pedidos agrupados por estado, para ver el trabajo pendiente y lo anulado.
+- Recaudo por medio de pago y estado, que distingue lo cobrado de lo que sigue
+  pendiente de ingresar a la caja.
+
+**Reporte de inventario** (`?tipo=inventario`) — para control de stock:
+
+- Indicadores: valor de las existencias a precio de venta, productos agotados,
+  productos por reponer y lotes en riesgo.
+- Productos con `60` unidades vigentes o menos, marcados como `AGOTADO` o
+  `ESCASO`.
+- Lotes vencidos o que caducan en los próximos `60` días, con el valor en
+  riesgo.
+- Existencias y valor por categoría.
+
+Las cifras se calculan con consultas de agrupación en `ReporteDao`, no
+recorriendo listas en Java: agrupar y sumar es lo que el motor de base de datos
+hace mejor. Los umbrales viven como constantes en `ServicioReporte`.
+
 ## Reglas de negocio implementadas en la capa de lógica
 
 - El subtotal de cada línea y el total del pedido **siempre** se recalculan en el
@@ -226,7 +273,12 @@ Zona reservada a los perfiles Administrador y Farmacéutico.
 - No se puede confirmar un pedido con medicamentos controlados sin adjuntar su
   fórmula médica.
 - El monto del pago debe cubrir el total; con PSE y datáfono debe ser exacto.
-- Un cliente solo puede ver y pagar sus propios pedidos, no los de otros.
+- Un cliente solo puede ver, pagar, editar o cancelar sus propios pedidos.
+- Un pedido solo se puede modificar o cancelar mientras esté `PENDIENTE`.
+- El total del pedido se recalcula con IVA cada vez que cambia su detalle, con
+  el mismo criterio del carrito.
+- Los pagos por PSE quedan `PENDIENTE`: sin convenio con ACH no se puede dar
+  por cierto un débito, así que el sistema no lo afirma.
 - La edad del cliente se calcula a partir de su fecha de nacimiento.
 - El inventario alerta los lotes que vencen en 30 días o menos.
 

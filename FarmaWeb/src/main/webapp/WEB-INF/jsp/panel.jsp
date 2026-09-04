@@ -44,6 +44,22 @@
     </div>
 </div>
 
+<c:if test="${sessionScope.usuarioSesion.administrador}">
+    <div class="tarjeta">
+        <h2>Reportes del negocio</h2>
+        <p>
+            Informacion agrupada para analizar las ventas y controlar el inventario.
+        </p>
+        <div class="acciones-formulario">
+            <a class="boton" href="${pageContext.request.contextPath}/reportes?tipo=ventas">
+                Reporte de ventas</a>
+            <a class="boton boton-secundario"
+               href="${pageContext.request.contextPath}/reportes?tipo=inventario">
+                Reporte de inventario</a>
+        </div>
+    </div>
+</c:if>
+
 <div class="tarjeta">
     <h2>Arquitectura del sistema</h2>
     <p>

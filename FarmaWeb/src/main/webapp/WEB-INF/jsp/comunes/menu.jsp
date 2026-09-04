@@ -25,4 +25,11 @@
     <a href="${raiz}/historial" class="${moduloActivo eq 'historial' ? 'activo' : ''}">Historial</a>
     <a href="${raiz}/pasarelas" class="${moduloActivo eq 'pasarelas' ? 'activo' : ''}">Pasarelas</a>
     <a href="${raiz}/transacciones" class="${moduloActivo eq 'transacciones' ? 'activo' : ''}">Transacciones</a>
+
+    <%-- Los reportes del negocio son exclusivos del rol Administrador --%>
+    <c:if test="${sessionScope.usuarioSesion.administrador}">
+        <a href="${raiz}/reportes" class="${moduloActivo eq 'reportes' ? 'activo' : ''}">Reportes</a>
+    </c:if>
+
+    <a href="${raiz}/inicio">Ver la tienda</a>
 </nav>

@@ -23,11 +23,16 @@ import jakarta.servlet.http.HttpServletResponse;
  * El metodo GET muestra las formas de pago disponibles junto con el valor a
  * pagar, y el metodo POST registra la transaccion escogida.
  *
+ * Cuando el cliente escoge PSE, la aplicacion lo lleva a la ruta
+ * /portal-pse, que representa la salida al portal del banco. Es una
+ * simulacion declarada: el proyecto no tiene convenio con ACH Colombia, de
+ * modo que no hay debito real y la transaccion queda pendiente.
+ *
  * Exige sesion de cliente: el filtro de seguridad ya bloquea el acceso sin
  * cuenta, y aqui se comprueba ademas que el pedido pertenezca a quien lo
  * esta pagando.
  */
-@WebServlet(name = "ServletPago", urlPatterns = {"/pago"})
+@WebServlet(name = "ServletPago", urlPatterns = {"/pago", "/portal-pse"})
 public class ServletPago extends ServletBase {
 
     private static final long serialVersionUID = 1L;
@@ -52,7 +57,8 @@ public class ServletPago extends ServletBase {
             peticion.setAttribute("mediosDePago", servicioPago.consultarMediosDisponibles());
             peticion.setAttribute("pagoRegistrado", servicioPago.yaTienePago(idPedido));
 
-            reenviarATienda(peticion, respuesta, "pago.jsp");
+            boolean esPortalPse = "/portal-pse".equals(peticion.getServletPath());
+            reenviarATienda(peticion, respuesta, esPortalPse ? "portal-pse.jsp" : "pago.jsp");
 
         } catch (RuntimeException error) {
             publicarErrorDeExcepcion(peticion, error);
@@ -77,7 +83,14 @@ public class ServletPago extends ServletBase {
                     idPedido, cliente.getIdCliente(), medioDePago, monto);
 
             publicarExito(peticion, armarMensaje(idPedido, medioDePago, cambio));
-            redirigirAlModulo(peticion, respuesta, "micuenta");
+
+            // Con PSE el cliente sale al portal del banco; los demas medios
+            // se resuelven en la entrega y vuelven directo a su cuenta.
+            if (servicioPago.requierePortalExterno(medioDePago)) {
+                respuesta.sendRedirect(peticion.getContextPath() + "/portal-pse?idPedido=" + idPedido);
+            } else {
+                redirigirAlModulo(peticion, respuesta, "micuenta");
+            }
 
         } catch (RuntimeException error) {
             publicarErrorDeExcepcion(peticion, error);
@@ -112,7 +125,7 @@ public class ServletPago extends ServletBase {
         }
 
         if (ServicioPago.PSE.equals(medioDePago)) {
-            mensaje.append("El pago quedo aprobado. ");
+            mensaje.append("La transaccion queda pendiente de confirmacion del banco. ");
         } else {
             mensaje.append("El pago se recibe al momento de la entrega. ");
         }

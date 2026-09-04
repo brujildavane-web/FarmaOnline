@@ -20,11 +20,18 @@ import co.edu.sena.farmacia.util.ConversorDatos;
  * Ofrece al cliente los medios de pago habilitados y registra la
  * transaccion en TblTransaccionPago.
  *
- * La diferencia entre los dos grupos de medios es el estado con que nace la
- * transaccion: el pago en linea por PSE se registra como APROBADA, mientras
- * que la contraentrega queda PENDIENTE porque el dinero se recibe al momento
- * de la entrega. En ambos casos el pedido sigue en estado PENDIENTE hasta que
- * un farmaceutico lo revise.
+ * Todas las transacciones nacen en estado PENDIENTE:
+ *
+ *   Contraentrega  el dinero se recibe al momento de la entrega.
+ *   PSE            el proyecto no tiene convenio con ACH Colombia ni acceso a
+ *                  un ambiente de pruebas de PSE, de modo que no se puede
+ *                  confirmar un debito real. La aplicacion registra la
+ *                  intencion de pago, redirige a una pagina que simula el
+ *                  portal del banco y deja la transaccion pendiente de
+ *                  conciliacion.
+ *
+ * Marcar un pago de PSE como aprobado sin que el banco lo confirme daria por
+ * cierto un cobro que nunca ocurrio.
  */
 public class ServicioPago {
 
@@ -32,6 +39,13 @@ public class ServicioPago {
     public static final String PSE = "PSE";
     public static final String CONTRAENTREGA_EFECTIVO = "Contraentrega efectivo";
     public static final String CONTRAENTREGA_DATAFONO = "Contraentrega datafono";
+
+    /**
+     * Estado con que nace toda transaccion: la contraentrega porque el dinero
+     * se recibe al entregar, y PSE porque sin la confirmacion del banco no se
+     * puede dar por cierto el debito.
+     */
+    public static final String ESTADO_INICIAL = "PENDIENTE";
 
     /** Orden en que se muestran en la pantalla de pago. */
     public static final List<String> MEDIOS_DE_PAGO = Arrays.asList(
@@ -125,7 +139,7 @@ public class ServicioPago {
         transaccion.setIdPasarela(pasarela.getIdPasarela());
         transaccion.setFechaPago(LocalDateTime.now());
         transaccion.setValor(montoEntregado);
-        transaccion.setEstadoTransaccion(determinarEstado(medioDePago));
+        transaccion.setEstadoTransaccion(ESTADO_INICIAL);
 
         transaccionDao.insertar(transaccion);
 
@@ -149,14 +163,13 @@ public class ServicioPago {
     }
 
     /**
-     * El pago en linea se aprueba de inmediato; la contraentrega queda
-     * pendiente hasta que el mensajero reciba el dinero.
+     * Indica si el medio escogido implica salir a un portal externo.
      *
      * @param medioDePago medio escogido por el cliente
-     * @return estado con que se registra la transaccion
+     * @return true cuando corresponde redirigir al portal del banco
      */
-    private String determinarEstado(String medioDePago) {
-        return PSE.equals(medioDePago) ? "APROBADA" : "PENDIENTE";
+    public boolean requierePortalExterno(String medioDePago) {
+        return PSE.equals(medioDePago);
     }
 
     /**

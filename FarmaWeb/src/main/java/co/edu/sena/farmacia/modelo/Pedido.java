@@ -35,15 +35,24 @@ public class Pedido {
     }
 
     /**
-     * Calcula el valor del impuesto contenido en el total del pedido.
+     * Calcula el valor del impuesto que viene incluido en el total.
      *
-     * @return valor del IVA sobre el total registrado
+     * El total del pedido ya trae el IVA sumado, de modo que el impuesto no
+     * se obtiene multiplicando el total por la tarifa: hay que extraerlo. Con
+     * una tarifa del 19 por ciento, el impuesto contenido en un valor con IVA
+     * equivale a total por 19 dividido 119.
+     *
+     * @return valor del IVA contenido en el total registrado
      */
     public BigDecimal calcularValorImpuesto() {
         if (total == null) {
             return BigDecimal.ZERO;
         }
-        return total.multiply(IVA_COLOMBIA).setScale(2, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal divisor = BigDecimal.ONE.add(IVA_COLOMBIA);
+        BigDecimal sinImpuesto = total.divide(divisor, 2, java.math.RoundingMode.HALF_UP);
+
+        return total.subtract(sinImpuesto).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     /**
@@ -131,6 +140,22 @@ public class Pedido {
     /** Valor del impuesto con separador de miles. */
     public String getValorImpuestoTexto() {
         return FormatoMoneda.enPesos(calcularValorImpuesto());
+    }
+
+    /**
+     * Total en pesos enteros, sin separadores ni centavos.
+     *
+     * Se usa para llenar los campos de formulario de tipo number, que solo
+     * admiten un numero plano: si se les pone un separador de miles el
+     * navegador lo interpreta como parte decimal.
+     *
+     * @return total redondeado a pesos, por ejemplo 55216
+     */
+    public BigDecimal getTotalEntero() {
+        if (total == null) {
+            return BigDecimal.ZERO;
+        }
+        return total.setScale(0, java.math.RoundingMode.HALF_UP);
     }
 
 }

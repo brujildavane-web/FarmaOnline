@@ -88,16 +88,25 @@ public class ServicioPedido {
     }
 
     /**
-     * Recalcula el total del pedido sumando los subtotales de sus lineas.
+     * Recalcula el total del pedido a partir de sus lineas de detalle.
      *
-     * Se invoca cada vez que se agrega, modifica o elimina una linea para
-     * que el encabezado y el detalle siempre coincidan.
+     * Se invoca cada vez que se agrega, modifica o elimina una linea para que
+     * el encabezado y el detalle siempre coincidan.
+     *
+     * Al total se le suma el IVA, con el mismo criterio con que el carrito
+     * calcula el valor a pagar. Si no se hiciera, un pedido editado quedaria
+     * con un total menor al que el cliente vio al comprar.
      *
      * @param idPedido identificador del pedido
-     * @return total recalculado
+     * @return total recalculado, con impuesto incluido
      */
     public BigDecimal recalcularTotal(int idPedido) {
-        BigDecimal total = lineaPedidoDao.sumarSubtotalesPorPedido(idPedido);
+        BigDecimal subtotal = lineaPedidoDao.sumarSubtotalesPorPedido(idPedido);
+        BigDecimal impuesto = subtotal.multiply(Pedido.IVA_COLOMBIA)
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal total = subtotal.add(impuesto).setScale(2, java.math.RoundingMode.HALF_UP);
+
         pedidoDao.actualizarTotal(idPedido, total);
         return total;
     }

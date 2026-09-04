@@ -111,7 +111,7 @@
                             <th scope="col">Total</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Atiende</th>
-                            <th scope="col">Pago</th>
+                            <th scope="col">Gestión</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,9 +128,11 @@
                                 </td>
                                 <td><c:out value="${pedido.nombreFarmaceutico}"/></td>
                                 <td>
-                                    <a class="boton boton-secundario boton-pequeno"
-                                       href="${raiz}/pago?idPedido=${pedido.idPedido}">
-                                        Ver el pago</a>
+                                    <div class="columna-acciones">
+                                        <a class="boton boton-secundario boton-pequeno"
+                                           href="${raiz}/mipedido?id=${pedido.idPedido}">
+                                            Ver, editar o cancelar</a>
+                                    </div>
                                 </td>
                             </tr>
                         </c:forEach>

@@ -58,8 +58,10 @@
                             <label for="medio-pse"><strong>PSE</strong> &mdash; pago en línea</label>
                         </div>
                         <span class="ayuda">
-                            Se debita de su cuenta bancaria. El pago queda aprobado de
-                            inmediato, por el valor exacto del pedido.
+                            Se le redirige al portal del banco, por el valor exacto.
+                            En este proyecto la redirección es una simulación: no hay
+                            convenio con ACH, así que el pago queda pendiente de
+                            confirmación.
                         </span>
                     </div>
 
@@ -88,13 +90,16 @@
 
                     <div class="campo">
                         <label for="monto">Monto con que paga</label>
+                        <%--
+                            El valor se pone en pesos enteros: un campo de tipo
+                            number no admite separadores de miles, porque el
+                            navegador los tomaria como parte decimal.
+                        --%>
                         <input type="number" id="monto" name="monto" required
-                               min="${pedido.total}" step="1"
-                               value="${pedido.total}">
+                               min="${pedido.totalEntero}" step="1"
+                               value="${pedido.totalEntero}">
                         <span class="ayuda">
-                            El pedido vale $${pedido.totalTexto}. Con PSE y con datáfono
-                            debe ser el valor exacto; en efectivo puede ser mayor y se le
-                            devuelve el cambio.
+                            Total a pagar: <strong>$${pedido.totalTexto}</strong>
                         </span>
                     </div>
 
