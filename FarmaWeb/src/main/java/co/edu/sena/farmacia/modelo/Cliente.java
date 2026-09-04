@@ -45,11 +45,6 @@ public class Cliente extends Persona {
         return Period.between(fechaNacimiento, LocalDate.now()).getYears();
     }
 
-    @Override
-    public String describirRol() {
-        return "Cliente";
-    }
-
     public int getIdCliente() {
         return idCliente;
     }

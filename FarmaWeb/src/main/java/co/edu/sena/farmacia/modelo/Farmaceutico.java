@@ -27,20 +27,6 @@ public class Farmaceutico extends Persona {
         this.registroProfesional = registroProfesional;
     }
 
-    @Override
-    public String describirRol() {
-        return "Farmaceutico";
-    }
-
-    /**
-     * Arma la etiqueta con que se identifica al profesional en los pedidos.
-     *
-     * @return nombre completo seguido de su registro profesional
-     */
-    public String obtenerIdentificacionProfesional() {
-        return obtenerNombreCompleto() + " (R.P. " + registroProfesional + ")";
-    }
-
     public int getIdFarmaceutico() {
         return idFarmaceutico;
     }

@@ -38,13 +38,6 @@ public abstract class Persona {
         return nombreCompleto.toString().trim();
     }
 
-    /**
-     * Define el comportamiento que cada subclase debe describir sobre si misma.
-     *
-     * @return rol que cumple la persona dentro de la farmacia
-     */
-    public abstract String describirRol();
-
     public String getNombre() {
         return nombre;
     }

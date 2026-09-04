@@ -55,16 +55,6 @@ public class Pedido {
         return total.subtract(sinImpuesto).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
-    /**
-     * Verifica si el pedido admite cambios en sus lineas de detalle.
-     *
-     * @return true mientras el pedido no haya sido entregado ni anulado
-     */
-    public boolean permiteModificacion() {
-        return estado == null
-                || (!estado.equalsIgnoreCase("ENTREGADO") && !estado.equalsIgnoreCase("ANULADO"));
-    }
-
     public int getIdPedido() {
         return idPedido;
     }
@@ -129,9 +119,6 @@ public class Pedido {
         this.nombreFarmaceutico = nombreFarmaceutico;
     }
 
-    public BigDecimal getValorImpuesto() {
-        return calcularValorImpuesto();
-    }
     /** Total del pedido con separador de miles. */
     public String getTotalTexto() {
         return FormatoMoneda.enPesos(total);

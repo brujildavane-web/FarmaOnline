@@ -160,8 +160,4 @@ public class ItemCarrito implements Serializable {
         return tieneReceta();
     }
 
-    public boolean getSinReceta() {
-        return faltaReceta();
-    }
-
 }

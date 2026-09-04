@@ -194,10 +194,6 @@ public class Carrito implements Serializable {
         return calcularSubtotal();
     }
 
-    public BigDecimal getImpuesto() {
-        return calcularImpuesto();
-    }
-
     public BigDecimal getTotal() {
         return calcularTotal();
     }
@@ -216,10 +212,6 @@ public class Carrito implements Serializable {
 
     public boolean getRecetasPendientes() {
         return faltanRecetas();
-    }
-
-    public List<ItemCarrito> getItemsSinReceta() {
-        return obtenerItemsSinReceta();
     }
     /** Subtotal del carrito con separador de miles. */
     public String getSubtotalTexto() {

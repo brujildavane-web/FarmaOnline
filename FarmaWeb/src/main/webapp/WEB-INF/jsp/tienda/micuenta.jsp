@@ -37,12 +37,7 @@
             <c:out value="${usuario.email}"/>
         </p>
 
-        <span class="insignia-rol"><c:out value="${usuario.nombreRol}"/></span>
-        <span class="ayuda" style="display:block; margin-top:6px;">
-            Rol asignado automáticamente al registrarse.
-            Solo el administrador puede cambiarlo.
-        </span>
-    </div>
+        <span class="insignia-rol"><c:out value="${usuario.nombreRol}"/></span>    </div>
 </div>
 
 <c:if test="${empty cliente}">
