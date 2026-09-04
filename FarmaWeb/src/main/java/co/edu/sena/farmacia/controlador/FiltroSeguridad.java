@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import co.edu.sena.farmacia.logica.CatalogoModulos;
+import co.edu.sena.farmacia.modelo.ModuloSistema;
 import co.edu.sena.farmacia.modelo.Usuario;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -25,28 +27,29 @@ import jakarta.servlet.http.HttpSession;
  *   Del cliente   mi cuenta, la gestion de sus pedidos, el pago, la salida
  *                 al portal de PSE y la confirmacion de la compra. Exige
  *                 sesion abierta.
- *   De gestion    el tablero, los trece modulos y los reportes. Exige
- *                 sesion y ademas el rol Administrador o Farmaceutico. Los
- *                 reportes agregan su propia restriccion: son exclusivos del
- *                 Administrador.
+ *   De gestion    el tablero, los modulos del modelo relacional y los
+ *                 reportes. Exige sesion y ademas que el rol tenga la
+ *                 pestana habilitada en el CatalogoModulos.
  *
  * La verificacion del rol es indispensable: sin ella un cliente autenticado
  * podria abrir el modulo de usuarios simplemente escribiendo la direccion.
+ *
+ * El permiso se consulta modulo por modulo en el CatalogoModulos, que es la
+ * misma fuente que dibuja el menu y que el administrador consulta en el
+ * modulo de Roles. Asi lo que se muestra en pantalla y lo que se autoriza
+ * nunca pueden quedar desalineados.
  */
 @WebFilter("/*")
 public class FiltroSeguridad implements Filter {
+
+    /** Nombre con que el menu de la cabecera recibe las pestanas del rol. */
+    public static final String ATRIBUTO_MENU = "modulosDelMenu";
 
     /** Rutas que cualquiera puede visitar, con o sin cuenta. */
     private static final List<String> RUTAS_PUBLICAS = Arrays.asList(
             "/", "/inicio", "/catalogo", "/producto", "/carrito",
             "/login", "/logout", "/registro",
             "/css/", "/img/", "/favicon.ico");
-
-    /** Rutas reservadas a los perfiles de gestion. */
-    private static final List<String> RUTAS_DE_GESTION = Arrays.asList(
-            "/panel", "/roles", "/usuarios", "/clientes", "/farmaceuticos", "/productos",
-            "/lotes", "/favoritos", "/pedidos", "/lineas", "/formulas", "/historial",
-            "/pasarelas", "/transacciones", "/reportes");
 
     @Override
     public void doFilter(ServletRequest peticionGenerica, ServletResponse respuestaGenerica,
@@ -57,6 +60,13 @@ public class FiltroSeguridad implements Filter {
 
         String ruta = peticion.getRequestURI().substring(peticion.getContextPath().length());
         Usuario usuario = obtenerUsuarioEnSesion(peticion);
+
+        // El menu se arma antes de atender la peticion para que la cabecera
+        // dibuje unicamente las pestanas habilitadas al rol en sesion.
+        if (usuario != null) {
+            peticion.setAttribute(ATRIBUTO_MENU, CatalogoModulos.modulosDelRol(
+                    usuario.getNombreRol(), CatalogoModulos.ZONA_GESTION));
+        }
 
         // Zona publica: pasa siempre
         if (esRutaPublica(ruta)) {
@@ -70,11 +80,14 @@ public class FiltroSeguridad implements Filter {
             return;
         }
 
-        // Zona de gestion: exige rol Administrador o Farmaceutico
-        if (esRutaDeGestion(ruta) && !puedeGestionar(usuario)) {
+        // Zona de gestion: exige que el rol tenga la pestana habilitada
+        ModuloSistema modulo = CatalogoModulos.buscarPorRuta(ruta);
+
+        if (esModuloDeGestion(modulo) && !modulo.tieneAcceso(usuario.getNombreRol())) {
             peticion.getSession().setAttribute(ServletBase.ATRIBUTO_MENSAJE_ERROR,
-                    "Su cuenta de cliente no tiene permiso para entrar al panel de gestion.");
-            respuesta.sendRedirect(peticion.getContextPath() + "/micuenta");
+                    "El perfil " + usuario.getNombreRol() + " no tiene habilitada la pestana "
+                            + modulo.getEtiqueta() + ".");
+            respuesta.sendRedirect(peticion.getContextPath() + elegirDestinoPermitido(usuario));
             return;
         }
 
@@ -110,23 +123,33 @@ public class FiltroSeguridad implements Filter {
     }
 
     /**
-     * Determina si la ruta pertenece al panel de gestion.
+     * Verifica que la ruta corresponda a un modulo del panel de gestion.
      *
-     * @param ruta ruta pedida por el navegador
-     * @return true cuando la ruta exige un perfil de gestion
+     * @param modulo modulo hallado en el catalogo, o null
+     * @return true cuando la ruta pertenece a la zona de gestion
      */
-    private boolean esRutaDeGestion(String ruta) {
-        return RUTAS_DE_GESTION.contains(ruta);
+    private boolean esModuloDeGestion(ModuloSistema modulo) {
+        return modulo != null && CatalogoModulos.ZONA_GESTION.equals(modulo.getZona());
     }
 
     /**
-     * Verifica que el usuario tenga un perfil con acceso al panel.
+     * Elige a donde devolver al usuario cuando pidio un modulo que su rol
+     * no tiene habilitado.
+     *
+     * Quien conserva pestanas de gestion vuelve al tablero; quien no tiene
+     * ninguna, como el cliente, vuelve a su cuenta. Se comprueba el acceso
+     * al tablero antes de proponerlo para no provocar un reenvio en ciclo.
      *
      * @param usuario usuario autenticado
-     * @return true cuando es Administrador o Farmaceutico
+     * @return ruta a la que se puede reenviar sin volver a ser rechazado
      */
-    private boolean puedeGestionar(Usuario usuario) {
-        return usuario.esAdministrador() || usuario.esFarmaceutico();
+    private String elegirDestinoPermitido(Usuario usuario) {
+        ModuloSistema tablero = CatalogoModulos.buscarPorRuta("/panel");
+
+        if (tablero != null && tablero.tieneAcceso(usuario.getNombreRol())) {
+            return "/panel";
+        }
+        return "/micuenta";
     }
 
     /**

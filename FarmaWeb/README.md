@@ -205,6 +205,41 @@ Zona reservada a los perfiles Administrador y Farmacéutico.
 | Pasarelas de pago | `/pasarelas` | `TblPasarelaPago` |
 | Transacciones | `/transacciones` | `TblTransaccionPago` |
 
+## Pestañas habilitadas a cada rol
+
+Los permisos de `TblRol` son un texto descriptivo. Lo que de verdad decide qué
+ve y qué puede abrir cada perfil es la clase `logica/CatalogoModulos.java`, que
+guarda cada pestaña del sistema con su ruta, su zona, para qué sirve y los roles
+que la tienen habilitada.
+
+Ese catálogo es la única fuente de esa información y se consulta en tres lugares,
+de modo que lo que se muestra en pantalla y lo que se autoriza no pueden quedar
+desalineados:
+
+1. `FiltroSeguridad` lo consulta para autorizar cada petición. Si el rol no tiene
+   la pestaña habilitada, no basta con escribir la dirección a mano: el filtro
+   devuelve al usuario al tablero, o a su cuenta si no tiene panel, con el
+   mensaje de por qué.
+2. `comunes/menu.jsp` recorre con `forEach` la lista ya filtrada que el filtro
+   deja en la petición, así que el menú dibuja solo las pestañas permitidas en
+   lugar de tenerlas escritas una por una.
+3. El módulo **Roles** la muestra al administrador como una matriz: por cada rol
+   registrado, la zona, la pestaña, qué encuentra allí y si necesita sesión.
+
+Reparto actual:
+
+| Pestañas | Administrador | Farmacéutico | Cliente |
+|---|---|---|---|
+| Tienda: inicio, catálogo, carrito, mi cuenta, mis pedidos, pago | sí | sí | sí |
+| Tablero, clientes, productos, inventario, favoritos, pedidos, detalle, fórmulas, historial | sí | sí | no |
+| Roles, usuarios, farmacéuticos, pasarelas, transacciones, reportes | sí | no | no |
+
+El farmacéutico atiende pedidos y fórmulas: no administra cuentas ni medios de
+pago, en coherencia con los permisos que la propia base de datos le describe.
+Un rol nuevo que el administrador cree desde el módulo aparece en la matriz sin
+pestañas de gestión, porque una ruta solo existe si existe el servlet que la
+atiende.
+
 ## Gestión de pedidos por el propio cliente
 
 Desde **Mi cuenta**, el cliente entra a `/mipedido?id=N` y, mientras el pedido

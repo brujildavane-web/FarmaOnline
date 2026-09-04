@@ -92,4 +92,66 @@
     </c:choose>
 </div>
 
+<div class="tarjeta">
+    <h2>Pestanas habilitadas a cada rol</h2>
+    <p>
+        Ademas del texto de permisos, aqui se ve el menu real que encuentra
+        cada perfil cuando inicia sesion. Es la misma informacion que consulta
+        el filtro de seguridad para autorizar cada modulo, por lo que siempre
+        coincide con lo que el usuario puede abrir.
+    </p>
+
+    <c:forEach var="rol" items="${listaRoles}">
+        <c:set var="pestanas" value="${modulosPorRol[rol.nombreRol]}"/>
+
+        <div class="bloque-rol">
+            <h3>
+                <span class="insignia-rol"><c:out value="${rol.nombreRol}"/></span>
+                <span class="nota-rol">
+                    <c:choose>
+                        <c:when test="${empty pestanas}">sin pestanas habilitadas</c:when>
+                        <c:otherwise>${pestanas.size()} pestanas habilitadas</c:otherwise>
+                    </c:choose>
+                </span>
+            </h3>
+
+            <c:choose>
+                <c:when test="${empty pestanas}">
+                    <p class="sin-registros">
+                        Este perfil no tiene modulos asignados en el mapa de navegacion,
+                        asi que solo alcanza la tienda publica. Los perfiles que el sistema
+                        reconoce son Administrador, Farmaceutico y Cliente.
+                    </p>
+                </c:when>
+                <c:otherwise>
+                    <div class="contenedor-tabla">
+                        <table class="tabla-datos">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Zona</th>
+                                    <th scope="col">Pestana</th>
+                                    <th scope="col">Que encuentra alli</th>
+                                    <th scope="col">Acceso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="modulo" items="${pestanas}">
+                                    <tr>
+                                        <td><c:out value="${modulo.zona}"/></td>
+                                        <td><c:out value="${modulo.etiqueta}"/></td>
+                                        <td style="white-space: normal;">
+                                            <c:out value="${modulo.proposito}"/>
+                                        </td>
+                                        <td>${modulo.exigeCuenta ? 'Con sesion' : 'Publica'}</td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </c:forEach>
+</div>
+
 <%@ include file="/WEB-INF/jsp/comunes/pie.jsp" %>

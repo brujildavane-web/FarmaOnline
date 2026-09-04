@@ -55,16 +55,21 @@ Pasarelas de pago · Transacciones de pago
 
 Cada módulo ofrece consulta, registro, edición y eliminación, con validaciones de
 negocio en la capa de lógica. Esta zona está reservada a los perfiles
-**Administrador** y **Farmacéutico**; un cliente autenticado que intente entrar
+**Administrador** y **Farmacéutico**, y dentro de ella cada rol ve únicamente
+las pestañas que tiene habilitadas; un cliente autenticado que intente entrar
 es devuelto a su cuenta.
 
 ### Perfiles
 
-| Rol | Quién lo asigna | A dónde entra |
+| Rol | Quién lo asigna | Pestañas habilitadas |
 |---|---|---|
-| Cliente | Se asigna solo al registrarse en la tienda | Mi cuenta: pedidos, favoritos y fórmulas |
-| Farmacéutico | El administrador, desde el módulo de Usuarios | Panel de gestión |
-| Administrador | El administrador, desde el módulo de Usuarios | Panel de gestión completo |
+| Cliente | Se asigna solo al registrarse en la tienda | Solo la tienda: inicio, catálogo, carrito, mi cuenta, mis pedidos y pago |
+| Farmacéutico | El administrador, desde el módulo de Usuarios | Operación diaria: tablero, clientes, productos, inventario, favoritos, pedidos, detalle, fórmulas e historial |
+| Administrador | El administrador, desde el módulo de Usuarios | Las 15 pestañas del panel, incluidas roles, usuarios, farmacéuticos, pasarelas, transacciones y reportes |
+
+El administrador no tiene que adivinar esta asignación: el módulo **Roles**
+muestra, debajo de los permisos escritos, la lista de pestañas que ve cada
+perfil cuando inicia sesión.
 
 ## Identidad visual
 

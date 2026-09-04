@@ -1,7 +1,10 @@
 package co.edu.sena.farmacia.controlador;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import co.edu.sena.farmacia.logica.CatalogoModulos;
 import co.edu.sena.farmacia.logica.ServicioRol;
 import co.edu.sena.farmacia.modelo.Rol;
 import jakarta.servlet.ServletException;
@@ -45,13 +48,34 @@ public class ServletRol extends ServletBase {
                 return;
             }
 
-            peticion.setAttribute("listaRoles", servicioRol.consultarTodos());
+            List<Rol> roles = servicioRol.consultarTodos();
+            peticion.setAttribute("listaRoles", roles);
+
+            // Ademas de los permisos escritos, se publica que pestanas ve
+            // realmente cada rol segun el catalogo que usa el filtro.
+            peticion.setAttribute("modulosPorRol",
+                    CatalogoModulos.agruparPorRol(extraerNombres(roles)));
 
         } catch (RuntimeException error) {
             publicarErrorDeExcepcion(peticion, error);
         }
 
         reenviarAVista(peticion, respuesta, VISTA);
+    }
+
+    /**
+     * Toma solo el nombre de cada rol, que es la llave con la que el
+     * catalogo de modulos decide el acceso.
+     *
+     * @param roles roles registrados en la base de datos
+     * @return nombres de los roles en el mismo orden
+     */
+    private List<String> extraerNombres(List<Rol> roles) {
+        List<String> nombres = new ArrayList<>();
+        for (Rol rol : roles) {
+            nombres.add(rol.getNombreRol());
+        }
+        return nombres;
     }
 
     /**
