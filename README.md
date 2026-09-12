@@ -71,6 +71,15 @@ El administrador no tiene que adivinar esta asignación: el módulo **Roles**
 muestra, debajo de los permisos escritos, la lista de pestañas que ve cada
 perfil cuando inicia sesión.
 
+### El estado del pedido mueve el inventario
+
+Un pedido en `PENDIENTE` todavía no toca las existencias: falta que el
+farmacéutico revise la fórmula médica. Al pasar a `CONFIRMADO` las unidades
+salen de los lotes, empezando por el más próximo a vencer, y no se vuelven a
+descontar en `EN CAMINO` ni en `ENTREGADO`; si el pedido se anula, regresan.
+Si no alcanza el inventario no se mueve nada y el pedido conserva su estado.
+El detalle está en [FarmaWeb/README.md](FarmaWeb/README.md).
+
 ## Identidad visual
 
 Paleta definida en la evidencia GA5‐220501095‐AA1‐EV04:

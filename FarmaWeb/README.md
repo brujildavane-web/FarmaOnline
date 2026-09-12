@@ -5,13 +5,13 @@ exige cuenta y un **panel de gestión** con los **13 módulos** derivados del mo
 relacional (evidencia GA6‐220501096‐AA2‐EV02), organizada en las tres capas definidas
 en el documento de estándares de codificación GA7‐220501096‐AA1‐EV02.
 
-74 clases Java, 29 páginas JSP y 20 servlets.
+86 clases Java, 33 páginas JSP y 23 servlets.
 
 ## Cumplimiento de los ítems de la evidencia
 
 | Ítem | Dónde se evidencia |
 |---|---|
-| 1. Formularios HTML con servlets | 29 páginas JSP con formularios `<form>` que envían a 20 servlets en `co.edu.sena.farmacia.controlador` |
+| 1. Formularios HTML con servlets | 33 páginas JSP, 22 de ellas con formularios `<form>`, que envían a 23 servlets en `co.edu.sena.farmacia.controlador` |
 | 2. Métodos GET y POST para parámetros | GET para consultas: `?accion=editar\|eliminar\|detalle`, `?categoria=`, `?q=`, `?id=`. POST para todo lo que modifica datos: registro, edición, carrito, ingreso y confirmación de pedidos |
 | 3. Elementos de JSP | Directivas `page`, `taglib` e `include`; expresiones EL con invocación de métodos; etiquetas JSTL (`c:forEach`, `c:if`, `c:choose`, `c:out`, `c:set`); objetos implícitos (`session`, `request`, `pageContext`, `response`); scriptlets; `jsp:forward`; plantillas maestras y fragmentos reutilizables |
 | 4. Versionamiento del código | Repositorio Git con `.gitignore`, commits descriptivos por módulo y repositorio remoto en GitHub |
@@ -20,16 +20,20 @@ en el documento de estándares de codificación GA7‐220501096‐AA1‐EV02.
 
 ```
 src/main/java/co/edu/sena/farmacia/
-├── modelo/          16 clases del dominio. POO: herencia Persona → Cliente y
+├── modelo/          18 clases del dominio. POO: herencia Persona → Cliente y
 │                    Farmaceutico. Carrito e ItemCarrito viven en la sesión.
-├── persistencia/    13 DAOs con JDBC y PreparedStatement, más la interfaz
-│                    DaoGenerico y la excepción de persistencia
-├── logica/          16 servicios con las reglas de negocio y validaciones,
-│                    incluidos ServicioCarrito y ServicioRegistro
-├── controlador/     20 servlets (IGU ↔ Lógica), la clase base común y el
+│                    ModuloSistema describe una pestaña y sus roles.
+├── persistencia/    14 DAOs con JDBC y PreparedStatement (uno por tabla más
+│                    ReporteDao), la interfaz DaoGenerico y la excepción de
+│                    persistencia
+├── logica/          20 servicios con las reglas de negocio y validaciones,
+│                    incluidos ServicioCarrito, ServicioRegistro y
+│                    ServicioMovimientoInventario; más CatalogoModulos, que
+│                    define qué pestaña ve cada rol
+├── controlador/     23 servlets (IGU ↔ Lógica), la clase base común y el
 │                    filtro de seguridad con autorización por rol
 └── util/            Conexión a la base, cifrado SHA-256, conversión de
-                     parámetros y formato de moneda
+                     parámetros, formato de moneda y almacén de recetas
 
 src/main/webapp/
 ├── css/estilos.css              Paleta e identidad visual del proyecto
@@ -39,7 +43,8 @@ src/main/webapp/
     ├── comunes/                 Plantillas del panel (cabecera, menú, pie)
     ├── tienda/                  9 páginas de la tienda pública y sus fragmentos
     ├── login.jsp, panel.jsp, error.jsp
-    └── modulos/                 Una página por cada uno de los 13 módulos
+    └── modulos/                 Una página por cada uno de los 13 módulos,
+                                 más la de reportes
 ```
 
 ## Identidad visual aplicada
@@ -167,7 +172,7 @@ monto:
 
 | Medio | Estado de la transacción | Monto |
 |---|---|---|
-| PSE | `APROBADA` — pago en línea inmediato | Valor exacto |
+| PSE | `PENDIENTE` — sale al portal simulado del banco | Valor exacto |
 | Contraentrega efectivo | `PENDIENTE` — se recibe al entregar | Puede ser mayor; el sistema calcula el cambio |
 | Contraentrega datáfono | `PENDIENTE` — se recibe al entregar | Valor exacto |
 
@@ -187,23 +192,29 @@ asigna automáticamente porque su columna no admite nulos.
 
 ## Los 13 módulos de gestión y su tabla
 
-Zona reservada a los perfiles Administrador y Farmacéutico.
+Zona reservada a los perfiles Administrador y Farmacéutico. Dentro de ella no
+todos ven lo mismo: la columna **Quién lo ve** es la que aplica el filtro de
+seguridad, y su origen se explica en la sección siguiente.
 
-| Módulo | Ruta | Tabla |
-|---|---|---|
-| Roles | `/roles` | `TblRol` |
-| Usuarios | `/usuarios` | `TblUsuario` |
-| Clientes | `/clientes` | `TblCliente` |
-| Farmacéuticos | `/farmaceuticos` | `TblFarmaceutico` |
-| Productos | `/productos` | `TblProducto` |
-| Inventario por lotes | `/lotes` | `TblLoteProducto` |
-| Favoritos | `/favoritos` | `TblFavorito` |
-| Pedidos | `/pedidos` | `TblPedido` |
-| Detalle de pedidos | `/lineas` | `TblLineaPedido` |
-| Fórmulas médicas | `/formulas` | `TblFormulaMedica` |
-| Historial | `/historial` | `TblHistorial` |
-| Pasarelas de pago | `/pasarelas` | `TblPasarelaPago` |
-| Transacciones | `/transacciones` | `TblTransaccionPago` |
+| Módulo | Ruta | Tabla | Quién lo ve |
+|---|---|---|---|
+| Roles | `/roles` | `TblRol` | Administrador |
+| Usuarios | `/usuarios` | `TblUsuario` | Administrador |
+| Clientes | `/clientes` | `TblCliente` | Administrador y Farmacéutico |
+| Farmacéuticos | `/farmaceuticos` | `TblFarmaceutico` | Administrador |
+| Productos | `/productos` | `TblProducto` | Administrador y Farmacéutico |
+| Inventario por lotes | `/lotes` | `TblLoteProducto` | Administrador y Farmacéutico |
+| Favoritos | `/favoritos` | `TblFavorito` | Administrador y Farmacéutico |
+| Pedidos | `/pedidos` | `TblPedido` | Administrador y Farmacéutico |
+| Detalle de pedidos | `/lineas` | `TblLineaPedido` | Administrador y Farmacéutico |
+| Fórmulas médicas | `/formulas` | `TblFormulaMedica` | Administrador y Farmacéutico |
+| Historial | `/historial` | `TblHistorial` | Administrador y Farmacéutico |
+| Pasarelas de pago | `/pasarelas` | `TblPasarelaPago` | Administrador |
+| Transacciones | `/transacciones` | `TblTransaccionPago` | Administrador |
+
+Se suman dos pestañas que no corresponden a una tabla del modelo: el tablero
+de indicadores en `/panel`, que ven los dos perfiles, y los reportes en
+`/reportes`, exclusivos del Administrador.
 
 ## Pestañas habilitadas a cada rol
 

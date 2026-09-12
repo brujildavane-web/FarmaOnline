@@ -12,9 +12,10 @@ Aplicacion web Java con dos zonas:
                    solo al confirmar el pedido, y quien se registra recibe el
                    rol Cliente.
 
-  PANEL DE GESTION Los 13 modulos derivados del modelo relacional mas el
-                   tablero de indicadores. Reservado a los perfiles
-                   Administrador y Farmaceutico.
+  PANEL DE GESTION Los 13 modulos derivados del modelo relacional, mas el
+                   tablero de indicadores y los reportes. Reservado a los
+                   perfiles Administrador y Farmaceutico, y dentro del panel
+                   cada perfil ve solo las pestanas que tiene habilitadas.
 
 Construida con Servlets, JSP y JDBC sobre una arquitectura de tres capas:
 IGU, Logica y Persistencia.
@@ -66,6 +67,10 @@ Opcion B, por phpMyAdmin:
 
 El script crea la base bd_farmacia con sus 13 tablas y carga datos de prueba.
 Al terminar muestra una tabla con el conteo de registros de cada tabla.
+
+El inventario que siembra ya viene descontado por el pedido de prueba que se
+crea en estado ENTREGADO, para que las existencias concuerden con los pedidos
+ya despachados desde el primer momento.
 
 IMPORTANTE: el script comienza con DROP DATABASE IF EXISTS bd_farmacia.
 Si ya existe una base con ese nombre, sus datos se reemplazan.
@@ -119,31 +124,56 @@ registrarse. Para confirmar un pedido se crea una cuenta o se ingresa.
       Cliente         laura.gomez@correo.com      cliente123
 
 Administrador y Farmaceutico entran al panel de gestion; el Cliente entra a
-Mi cuenta. Un cliente no puede abrir los modulos de gestion ni escribiendo la
-direccion: el sistema lo devuelve a su cuenta.
+Mi cuenta. El control no depende del menu: quien escriba a mano la direccion
+de una pestana que su rol no tiene habilitada es devuelto al tablero, o a su
+cuenta si no tiene panel, con el motivo en pantalla.
 
 Las contrasenas se almacenan cifradas con SHA-256, nunca en texto plano.
 
 
 -------------------------------------------------------------------------------
-  COMO SE ASIGNAN LOS ROLES
+  ROLES Y PESTANAS QUE VE CADA UNO
 -------------------------------------------------------------------------------
+
+Quien asigna cada rol:
 
       Cliente        Se asigna solo, al registrarse en la tienda
       Farmaceutico   Lo asigna el administrador, desde el modulo de Usuarios
       Administrador  Lo asigna el administrador, desde el modulo de Usuarios
+
+Que ve cada uno al iniciar sesion:
+
+      Cliente        Solo la tienda: inicio, catalogo, carrito, mi cuenta,
+                     mis pedidos y pago
+      Farmaceutico   La tienda mas la operacion diaria: tablero, clientes,
+                     productos, inventario, favoritos, pedidos, detalle de
+                     pedidos, formulas medicas e historial
+      Administrador  Todo lo anterior mas roles, usuarios, farmaceuticos,
+                     pasarelas, transacciones y reportes
+
+El farmaceutico atiende pedidos y formulas medicas: no administra cuentas ni
+medios de pago, en coherencia con los permisos que la base de datos le
+describe.
+
+No hay que adivinar este reparto. El modulo Roles se lo muestra al
+administrador: debajo de la tabla de permisos aparece, por cada rol
+registrado, la lista de pestanas que ve, para que sirve cada una y si exige
+sesion. Es la misma informacion que usa el sistema para autorizar, de modo
+que lo que se muestra y lo que se permite no pueden quedar desalineados.
 
 
 -------------------------------------------------------------------------------
   ALTERNATIVA SIN COMPILAR
 -------------------------------------------------------------------------------
 
-En la raiz de este paquete se incluye el archivo ya compilado:
+El archivo compilado es:
 
-      farmaweb.war
+      FarmaWeb\target\farmaweb.war
 
-Si prefiere no usar Maven, copie ese archivo a la carpeta webapps de un
-Apache Tomcat 10.1 instalado y abra http://localhost:8080/farmaweb
+Lo genera el comando mvn clean package del paso 4. Si prefiere no usar el
+servidor que trae Maven, copie ese archivo a la carpeta webapps de un Apache
+Tomcat 10.1 instalado y abra http://localhost:8080/farmaweb
+
 De todas formas debe realizar antes los pasos 1 y 2.
 
 
@@ -173,6 +203,7 @@ por ejemplo C:\ModuloFarma
       Detalle de producto    /producto?id=N
       Carrito                /carrito
       Crear cuenta           /registro
+      Iniciar sesion         /login
       Pago del pedido        /pago?idPedido=N
       Portal PSE simulado    /portal-pse?idPedido=N
       Gestionar un pedido    /mipedido?id=N
@@ -194,8 +225,9 @@ vacio, se usa la subcarpeta farmaweb-recetas del directorio del usuario.
 
 Al confirmar el pedido, el cliente escoge la forma de pago e indica el monto:
 
-      PSE                       Pago en linea. Queda aprobado de inmediato.
-                                Se exige el valor exacto.
+      PSE                       Pago en linea. Se exige el valor exacto y la
+                                aplicacion redirige a una pagina que simula
+                                el portal del banco.
       Contraentrega efectivo    Se paga al recibir. Puede indicar un monto
                                 mayor y el sistema calcula el cambio.
       Contraentrega datafono    Se paga al recibir con tarjeta. Valor exacto.
@@ -203,9 +235,46 @@ Al confirmar el pedido, el cliente escoge la forma de pago e indica el monto:
 En todos los casos el pedido queda en estado PENDIENTE hasta que un
 farmaceutico lo revise y lo confirme.
 
-El pago por PSE tambien queda PENDIENTE: el proyecto no tiene convenio con
-ACH Colombia, de modo que no se puede confirmar un debito real. La aplicacion
-redirige a una pagina que simula el portal del banco y lo declara.
+El pago tambien queda PENDIENTE en las tres formas, incluido el PSE: el
+proyecto no tiene convenio con ACH Colombia, de modo que no se puede
+confirmar un debito real. La pagina que simula el portal del banco lo declara
+en pantalla, en lugar de dar por aprobado un pago que nadie verifico.
+
+
+-------------------------------------------------------------------------------
+  EL ESTADO DEL PEDIDO MUEVE EL INVENTARIO
+-------------------------------------------------------------------------------
+
+Un pedido recien confirmado por el cliente queda en PENDIENTE y todavia no
+toca el inventario: falta que el farmaceutico revise la formula medica. Las
+existencias se mueven cuando el pedido cruza la frontera entre seguir en el
+estante y haber salido:
+
+      PENDIENTE      las unidades siguen contando como existencias
+      CONFIRMADO     ya salieron del inventario
+      EN CAMINO      ya salieron
+      ENTREGADO      ya salieron
+      ANULADO        las unidades regresan al inventario
+
+Lo que se compara no es el estado nuevo por si solo, sino si el pedido cambio
+de lado. Por eso un pedido que recorre CONFIRMADO, EN CAMINO y ENTREGADO
+descuenta una sola vez y no en los tres pasos; si despues se anula, las
+unidades regresan.
+
+Se descuenta desde CONFIRMADO y no solo al entregar porque, cuando el
+farmaceutico confirma, ya aparto el producto para ese cliente: dejarlo
+disponible permitiria prometer dos veces la misma unidad.
+
+      Las unidades salen del lote mas proximo a vencer y siguen con el
+      siguiente cuando el primero no alcanza. Los lotes vencidos no se usan.
+
+      Antes de tocar el primer lote se comprueba que alcance para todas las
+      lineas del pedido. Si falta stock de un producto no se mueve nada y el
+      pedido conserva su estado, con el aviso de cuanto pide y cuanto hay.
+
+El cambio de estado se hace desde el modulo Pedidos, con el selector de la
+columna Estado. El aviso de la pantalla informa cuantas unidades salieron o
+regresaron, y el reporte de inventario refleja el cambio de inmediato.
 
 
 -------------------------------------------------------------------------------
@@ -216,7 +285,8 @@ Desde Mi cuenta el cliente entra a su pedido y, mientras siga PENDIENTE,
 puede cambiar cantidades, retirar productos o cancelarlo.
 
 Cancelar no borra el pedido: lo deja en estado ANULADO y lo registra en el
-historial, para conservar la trazabilidad.
+historial, para conservar la trazabilidad. Un pedido ANULADO no cuenta como
+venta en los reportes.
 
 Si el pedido ya tenia un pago, la pantalla advierte que si el pago fue por
 PSE el reembolso dependera de la entidad bancaria.
@@ -242,22 +312,26 @@ Ruta /reportes, exclusiva del rol Administrador.
   LOS 13 MODULOS DE GESTION Y SU TABLA
 -------------------------------------------------------------------------------
 
-      Reportes               /reportes        solo del rol Administrador
-      Roles                  /roles           TblRol
-      Usuarios               /usuarios        TblUsuario
-      Clientes               /clientes        TblCliente
-      Farmaceuticos          /farmaceuticos   TblFarmaceutico
-      Productos              /productos       TblProducto
-      Inventario por lotes   /lotes           TblLoteProducto
-      Favoritos              /favoritos       TblFavorito
-      Pedidos                /pedidos         TblPedido
-      Detalle de pedidos     /lineas          TblLineaPedido
-      Formulas medicas       /formulas        TblFormulaMedica
-      Historial              /historial       TblHistorial
-      Pasarelas de pago      /pasarelas       TblPasarelaPago
-      Transacciones          /transacciones   TblTransaccionPago
+                                                  Tabla              Quien lo ve
 
-Mas el tablero de gestion en /panel, que reune los indicadores del sistema.
+      Roles                  /roles           TblRol               Admin
+      Usuarios               /usuarios        TblUsuario           Admin
+      Clientes               /clientes        TblCliente           Admin y Farm
+      Farmaceuticos          /farmaceuticos   TblFarmaceutico      Admin
+      Productos              /productos       TblProducto          Admin y Farm
+      Inventario por lotes   /lotes           TblLoteProducto      Admin y Farm
+      Favoritos              /favoritos       TblFavorito          Admin y Farm
+      Pedidos                /pedidos         TblPedido            Admin y Farm
+      Detalle de pedidos     /lineas          TblLineaPedido       Admin y Farm
+      Formulas medicas       /formulas        TblFormulaMedica     Admin y Farm
+      Historial              /historial       TblHistorial         Admin y Farm
+      Pasarelas de pago      /pasarelas       TblPasarelaPago      Admin
+      Transacciones          /transacciones   TblTransaccionPago   Admin
+
+Mas dos pestanas que no corresponden a una tabla del modelo:
+
+      Tablero de gestion     /panel           indicadores          Admin y Farm
+      Reportes               /reportes        consultas agrupadas  Admin
 
 Las cinco categorias del catalogo son: Medicamentos, Cuidado personal,
 Botiquin, Bebes y Nutricion. Se asignan a cada producto desde el modulo de
