@@ -91,7 +91,7 @@ C:\xampp\mysql\bin\mysql.exe -u root < src/main/resources/sql/bd_farmacia_comple
 O bien abrir <http://localhost/phpmyadmin>, pestaña **SQL**, y pegar el contenido de
 `src/main/resources/sql/bd_farmacia_completa.sql`.
 
-Al final el script muestra una tabla con el conteo de registros de las 13 tablas.
+Al final el script muestra una tabla con el conteo de registros de las 13 tablas del modelo y las 2 de apoyo.
 
 ### 2. Ajustar la conexión si es necesario
 

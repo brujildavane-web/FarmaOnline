@@ -67,6 +67,9 @@ public class ServicioRegistro {
         cliente.setEdad(cliente.calcularEdadActual());
         clienteDao.insertar(cliente);
 
+        new ServicioNotificacion().notificarUsuario(creado.getIdUsuario(),
+                "Bienvenido a Farmacia en Linea. Su cuenta fue creada con el rol Cliente.");
+
         return creado;
     }
 

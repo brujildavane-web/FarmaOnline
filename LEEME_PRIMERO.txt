@@ -1,6 +1,5 @@
 ===============================================================================
   SISTEMA DE GESTION DE FARMACIA EN LINEA
-  Evidencia GA7-220501096-AA2-EV01. Codificacion de modulos del software
 
   COMO EJECUTAR EL PROYECTO
 ===============================================================================
@@ -65,7 +64,8 @@ Opcion B, por phpMyAdmin:
           FarmaWeb\src\main\resources\sql\bd_farmacia_completa.sql
       Ejecute
 
-El script crea la base bd_farmacia con sus 13 tablas y carga datos de prueba.
+El script crea la base bd_farmacia con sus 13 tablas del modelo mas 2 de apoyo
+(recuperacion de contrasena y notificaciones) y carga datos de prueba.
 Al terminar muestra una tabla con el conteo de registros de cada tabla.
 
 El inventario que siembra ya viene descontado por el pedido de prueba que se
@@ -129,6 +129,15 @@ de una pestana que su rol no tiene habilitada es devuelto al tablero, o a su
 cuenta si no tiene panel, con el motivo en pantalla.
 
 Las contrasenas se almacenan cifradas con SHA-256, nunca en texto plano.
+
+RECUPERAR LA CONTRASENA: en la pantalla de ingreso, el enlace "Olvido su
+contrasena?" pide el correo y genera un enlace de un solo uso, vigente 30
+minutos. No hay servidor de correo: el enlace se muestra en pantalla como lo
+haria el mensaje (simulacion declarada).
+
+NOTIFICACIONES: el sistema avisa al usuario cuando se registra su pedido,
+cuando el pedido cambia de estado, cuando se crea su cuenta y cuando se cambia
+su contrasena. El contador aparece en la cabecera y la lista en /notificaciones.
 
 
 -------------------------------------------------------------------------------

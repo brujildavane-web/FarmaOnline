@@ -35,6 +35,31 @@ CREATE TABLE TblUsuario (
         REFERENCES TblRol(Rol_IdRol) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- Enlaces de recuperacion de contrasena. Se guarda el resumen SHA-256 del
+-- codigo, nunca el codigo entregado al usuario, y cada enlace vence y se usa
+-- una sola vez. Tabla de apoyo, no pertenece al modelo relacional original.
+CREATE TABLE TblRecuperacionClave (
+    Rec_IdRecuperacion INT AUTO_INCREMENT PRIMARY KEY,
+    Rec_CodigoHash CHAR(64) NOT NULL UNIQUE,
+    Rec_FechaExpira DATETIME NOT NULL,
+    Rec_Usado TINYINT(1) NOT NULL DEFAULT 0,
+    TblUsu_UsuIdUsuario INT NOT NULL,
+    CONSTRAINT fk_recuperacion_usuario FOREIGN KEY (TblUsu_UsuIdUsuario)
+        REFERENCES TblUsuario(Usu_IdUsuario) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Avisos que el sistema deja a cada usuario (pedido creado, cambio de estado,
+-- cambio de contrasena). Tabla de apoyo, no pertenece al modelo original.
+CREATE TABLE TblNotificacion (
+    Not_IdNotificacion INT AUTO_INCREMENT PRIMARY KEY,
+    Not_Mensaje VARCHAR(255) NOT NULL,
+    Not_Fecha DATETIME NOT NULL,
+    Not_Leida TINYINT(1) NOT NULL DEFAULT 0,
+    TblUsu_UsuIdUsuario INT NOT NULL,
+    CONSTRAINT fk_notificacion_usuario FOREIGN KEY (TblUsu_UsuIdUsuario)
+        REFERENCES TblUsuario(Usu_IdUsuario) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- Profesionales que validan formulas y despachan medicamentos
 CREATE TABLE TblFarmaceutico (
     Far_IdFarmaceutico INT AUTO_INCREMENT PRIMARY KEY,
@@ -345,6 +370,11 @@ INSERT INTO TblFavorito (TblCli_ClieIdCliente, TblPro_ProIdProducto, Fav_FechaMa
     (1, 5, CURDATE()),
     (2, 3, CURDATE());
 
+-- Notificaciones de bienvenida
+INSERT INTO TblNotificacion (Not_Mensaje, Not_Fecha, Not_Leida, TblUsu_UsuIdUsuario) VALUES
+    ('Su pedido 1 fue entregado. Gracias por su compra.', NOW(), 0, 4),
+    ('Su pedido 2 fue registrado y esta pendiente de confirmacion.', NOW(), 0, 5);
+
 -- --------------------------------------------------------------- VERIFICACION
 
 SELECT 'Roles' AS Tabla, COUNT(*) AS Registros FROM TblRol
@@ -359,4 +389,5 @@ UNION ALL SELECT 'Lineas de pedido', COUNT(*) FROM TblLineaPedido
 UNION ALL SELECT 'Historial', COUNT(*) FROM TblHistorial
 UNION ALL SELECT 'Formulas medicas', COUNT(*) FROM TblFormulaMedica
 UNION ALL SELECT 'Pasarelas de pago', COUNT(*) FROM TblPasarelaPago
-UNION ALL SELECT 'Transacciones', COUNT(*) FROM TblTransaccionPago;
+UNION ALL SELECT 'Transacciones', COUNT(*) FROM TblTransaccionPago
+UNION ALL SELECT 'Notificaciones', COUNT(*) FROM TblNotificacion;

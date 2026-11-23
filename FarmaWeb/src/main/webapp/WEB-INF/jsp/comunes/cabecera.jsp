@@ -33,6 +33,9 @@
             Usuario: <strong><c:out value="${sessionScope.usuarioSesion.email}"/></strong>
             (<c:out value="${sessionScope.usuarioSesion.nombreRol}"/>)
         </span>
+        <a class="boton-salir" href="${pageContext.request.contextPath}/notificaciones">
+            Notificaciones<c:if test="${notificacionesSinLeer gt 0}"> (${notificacionesSinLeer})</c:if>
+        </a>
         <a class="boton-salir" href="${pageContext.request.contextPath}/logout">Cerrar sesion</a>
     </div>
 </header>

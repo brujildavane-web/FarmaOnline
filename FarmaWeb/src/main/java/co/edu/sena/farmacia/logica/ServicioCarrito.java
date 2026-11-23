@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class ServicioCarrito {
 
+    private final ServicioNotificacion servicioNotificacion = new ServicioNotificacion();
+
     /** Estado con que nace todo pedido creado por el propio cliente. */
     public static final String ESTADO_INICIAL = "PENDIENTE";
 
@@ -175,6 +177,9 @@ public class ServicioCarrito {
         registrarHistorial(carrito, idPedido);
 
         carrito.vaciar();
+
+        servicioNotificacion.notificarCliente(idCliente,
+                "Su pedido " + idPedido + " fue registrado y esta pendiente de confirmacion.");
         return idPedido;
     }
 

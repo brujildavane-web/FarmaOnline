@@ -24,6 +24,7 @@ public class ServicioPedido {
 
     private final PedidoDao pedidoDao = new PedidoDao();
     private final LineaPedidoDao lineaPedidoDao = new LineaPedidoDao();
+    private final ServicioNotificacion servicioNotificacion = new ServicioNotificacion();
     private final ServicioMovimientoInventario servicioMovimiento = new ServicioMovimientoInventario();
 
     /**
@@ -92,11 +93,17 @@ public class ServicioPedido {
             throw new ExcepcionNegocio("El estado " + estadoNuevo + " no es valido para un pedido.");
         }
 
-        String estadoAnterior = consultarPorId(idPedido).getEstado();
+        Pedido pedidoActual = consultarPorId(idPedido);
+        String estadoAnterior = pedidoActual.getEstado();
         String movimiento = servicioMovimiento.aplicarCambioDeEstado(
                 idPedido, estadoAnterior, estado);
 
         pedidoDao.actualizarEstado(idPedido, estado);
+
+        if (!estado.equalsIgnoreCase(estadoAnterior)) {
+            servicioNotificacion.notificarCliente(pedidoActual.getIdCliente(),
+                    "Su pedido " + idPedido + " cambio de estado a " + estado + ".");
+        }
         return movimiento;
     }
 

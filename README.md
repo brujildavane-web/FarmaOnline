@@ -59,6 +59,16 @@ negocio en la capa de lógica. Esta zona está reservada a los perfiles
 las pestañas que tiene habilitadas; un cliente autenticado que intente entrar
 es devuelto a su cuenta.
 
+### Recuperación de contraseña y notificaciones
+
+- **Recuperar contraseña:** `/recuperar` genera un enlace de un solo uso con vigencia de 30 minutos
+  (se guarda solo su resumen SHA-256) y `/restablecer` define la contraseña nueva. Sin servidor de
+  correo, el enlace se muestra en pantalla: simulación declarada.
+- **Notificaciones:** avisos al usuario por pedido registrado, cambio de estado, cuenta creada y cambio
+  de contraseña, con contador en la cabecera y listado en `/notificaciones`.
+- Ambas funciones usan dos tablas de apoyo (`TblRecuperacionClave`, `TblNotificacion`) que se suman
+  a las 13 del modelo relacional.
+
 ### Perfiles
 
 | Rol | Quién lo asigna | Pestañas habilitadas |

@@ -63,6 +63,12 @@
                     <a class="boton boton-secundario" href="${raiz}/panel">Panel de gestión</a>
                 </c:if>
                 <a class="boton boton-secundario" href="${raiz}/micuenta">Mi cuenta</a>
+                <a class="boton-carrito" href="${raiz}/notificaciones">
+                    Notificaciones
+                    <c:if test="${notificacionesSinLeer gt 0}">
+                        <span class="contador-carrito" id="contador-notificaciones">${notificacionesSinLeer}</span>
+                    </c:if>
+                </a>
                 <a class="boton-salir" href="${raiz}/logout">Cerrar sesión</a>
             </c:otherwise>
         </c:choose>

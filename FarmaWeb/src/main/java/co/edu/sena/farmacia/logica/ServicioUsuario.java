@@ -108,6 +108,9 @@ public class ServicioUsuario {
     public void cambiarPassword(int idUsuario, String passwordPlano) {
         validarPassword(passwordPlano);
         usuarioDao.actualizarPassword(idUsuario, EncriptadorPassword.generarHash(passwordPlano));
+
+        new ServicioNotificacion().notificarUsuario(idUsuario,
+                "Su contrasena fue cambiada por un administrador.");
     }
 
     /**

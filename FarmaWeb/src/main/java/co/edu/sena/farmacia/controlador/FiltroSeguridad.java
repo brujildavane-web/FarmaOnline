@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import co.edu.sena.farmacia.logica.CatalogoModulos;
+import co.edu.sena.farmacia.logica.ServicioNotificacion;
 import co.edu.sena.farmacia.modelo.ModuloSistema;
 import co.edu.sena.farmacia.modelo.Usuario;
 import jakarta.servlet.Filter;
@@ -48,8 +49,13 @@ public class FiltroSeguridad implements Filter {
     /** Rutas que cualquiera puede visitar, con o sin cuenta. */
     private static final List<String> RUTAS_PUBLICAS = Arrays.asList(
             "/", "/inicio", "/catalogo", "/producto", "/carrito",
-            "/login", "/logout", "/registro",
+            "/login", "/logout", "/registro", "/recuperar", "/restablecer",
             "/css/", "/img/", "/favicon.ico");
+
+    /** Nombre con que las cabeceras reciben la cantidad de avisos sin leer. */
+    public static final String ATRIBUTO_SIN_LEER = "notificacionesSinLeer";
+
+    private final ServicioNotificacion servicioNotificacion = new ServicioNotificacion();
 
     @Override
     public void doFilter(ServletRequest peticionGenerica, ServletResponse respuestaGenerica,
@@ -66,6 +72,13 @@ public class FiltroSeguridad implements Filter {
         if (usuario != null) {
             peticion.setAttribute(ATRIBUTO_MENU, CatalogoModulos.modulosDelRol(
                     usuario.getNombreRol(), CatalogoModulos.ZONA_GESTION));
+        }
+
+        // El indicador de notificaciones se calcula solo para paginas, no para
+        // las hojas de estilo ni las imagenes.
+        if (usuario != null && !ruta.startsWith("/css/") && !ruta.startsWith("/img/")) {
+            peticion.setAttribute(ATRIBUTO_SIN_LEER,
+                    servicioNotificacion.contarSinLeer(usuario.getIdUsuario()));
         }
 
         // Zona publica: pasa siempre

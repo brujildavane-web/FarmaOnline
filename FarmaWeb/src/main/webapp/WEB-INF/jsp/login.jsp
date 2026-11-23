@@ -59,6 +59,10 @@
             <button type="submit">Ingresar</button>
         </form>
 
+        <p class="ayuda" style="margin-top:10px; text-align:center;">
+            <a href="${pageContext.request.contextPath}/recuperar">¿Olvidó su contraseña?</a>
+        </p>
+
         <div class="acciones-formulario" style="margin-top:18px;">
             <a class="boton boton-secundario" style="width:100%; text-align:center;"
                href="${pageContext.request.contextPath}/registro">Crear mi cuenta</a>
