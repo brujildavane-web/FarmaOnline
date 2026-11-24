@@ -29,7 +29,7 @@ cd FarmaWeb
 mvn clean package
 mvn cargo:run
 
-# 4. Abrir http://localhost:8080/farmaweb
+# 4. Abrir http://localhost:8080/FarmaOnline
 ```
 
 Requiere **JDK 17** y **Maven 3.9+** instalados.

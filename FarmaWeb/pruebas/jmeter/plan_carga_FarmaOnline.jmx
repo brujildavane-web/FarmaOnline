@@ -5,7 +5,7 @@
   Cada usuario: abre el inicio, recorre el catalogo, busca un producto,
   abre la pantalla de ingreso e ingresa como cliente.
   Ejecucion (modo consola):
-    jmeter -n -t plan_carga_farmaweb.jmx -l resultados.jtl -e -o informe
+    jmeter -n -t plan_carga_FarmaOnline.jmx -l resultados.jtl -e -o informe
 -->
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
@@ -48,7 +48,7 @@
         <hashTree/>
 
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01 Inicio de la tienda" enabled="true">
-          <stringProp name="HTTPSampler.path">/farmaweb/inicio</stringProp>
+          <stringProp name="HTTPSampler.path">/FarmaOnline/inicio</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -64,7 +64,7 @@
         </hashTree>
 
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="02 Catalogo completo" enabled="true">
-          <stringProp name="HTTPSampler.path">/farmaweb/catalogo</stringProp>
+          <stringProp name="HTTPSampler.path">/FarmaOnline/catalogo</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -91,7 +91,7 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.path">/farmaweb/catalogo</stringProp>
+          <stringProp name="HTTPSampler.path">/FarmaOnline/catalogo</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -107,7 +107,7 @@
         </hashTree>
 
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04 Pantalla de ingreso" enabled="true">
-          <stringProp name="HTTPSampler.path">/farmaweb/login</stringProp>
+          <stringProp name="HTTPSampler.path">/FarmaOnline/login</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -142,7 +142,7 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.path">/farmaweb/login</stringProp>
+          <stringProp name="HTTPSampler.path">/FarmaOnline/login</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>

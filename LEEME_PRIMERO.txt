@@ -112,7 +112,7 @@ Para detener el servidor: Ctrl+C en esa terminal.
   PASO 5. ABRIR LA APLICACION
 -------------------------------------------------------------------------------
 
-      http://localhost:8080/farmaweb
+      http://localhost:8080/FarmaOnline
 
 Se abre la tienda publica: puede recorrer el catalogo y armar el carrito sin
 registrarse. Para confirmar un pedido se crea una cuenta o se ingresa.
@@ -177,11 +177,11 @@ que lo que se muestra y lo que se permite no pueden quedar desalineados.
 
 El archivo compilado es:
 
-      FarmaWeb\target\farmaweb.war
+      FarmaWeb\target\FarmaOnline.war
 
 Lo genera el comando mvn clean package del paso 4. Si prefiere no usar el
 servidor que trae Maven, copie ese archivo a la carpeta webapps de un Apache
-Tomcat 10.1 instalado y abra http://localhost:8080/farmaweb
+Tomcat 10.1 instalado y abra http://localhost:8080/FarmaOnline
 
 De todas formas debe realizar antes los pasos 1 y 2.
 
@@ -195,7 +195,7 @@ FarmaWeb\pom.xml instala y ejecuta Tomcat en la ruta C:\farmaweb-servidor
 porque la carpeta original del proyecto contiene tildes y guiones especiales
 que corrompen la linea de comandos con que se lanza el servidor.
 
-En Linux o macOS esa ruta no existe. En ese caso, use el archivo farmaweb.war
+En Linux o macOS esa ruta no existe. En ese caso, use el archivo FarmaOnline.war
 sobre un Tomcat 10.1 instalado, o cambie el valor de la propiedad dir.tomcat
 en FarmaWeb\pom.xml por una ruta valida del sistema.
 

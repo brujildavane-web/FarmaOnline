@@ -110,7 +110,7 @@ La primera ejecución descarga Tomcat 10.1 (unos 15 MB) y las dependencias.
 
 ### 4. Abrir la aplicación
 
-<http://localhost:8080/farmaweb>
+<http://localhost:8080/FarmaOnline>
 
 > **Nota sobre la ruta del proyecto.** La carpeta de esta evidencia contiene
 > caracteres no ASCII (la `Ó` de "EJECUCIÓN" y guiones `‐` U+2010 en
@@ -377,8 +377,8 @@ hace mejor. Los umbrales viven como constantes en `ServicioReporte`.
 mvn clean package
 ```
 
-Copiar `target/farmaweb.war` a la carpeta `webapps` de Tomcat 10.1 y abrir
-<http://localhost:8080/farmaweb>.
+Copiar `target/FarmaOnline.war` a la carpeta `webapps` de Tomcat 10.1 y abrir
+<http://localhost:8080/FarmaOnline>.
 
 ## Dos decisiones técnicas que conviene conocer
 

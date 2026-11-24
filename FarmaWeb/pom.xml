@@ -102,7 +102,7 @@
     </dependencies>
 
     <build>
-        <finalName>farmaweb</finalName>
+        <finalName>FarmaOnline</finalName>
 
         <plugins>
 
@@ -120,7 +120,7 @@
 
             <!--
                 Tomcat embebido: "mvn cargo:run" descarga Tomcat 10.1, despliega
-                la aplicacion y la publica en http://localhost:8080/farmaweb
+                la aplicacion y la publica en http://localhost:8080/FarmaOnline
                 No requiere instalar Tomcat manualmente.
             -->
             <plugin>
@@ -148,7 +148,7 @@
                             <artifactId>farmaweb</artifactId>
                             <type>war</type>
                             <properties>
-                                <context>farmaweb</context>
+                                <context>FarmaOnline</context>
                             </properties>
                         </deployable>
                     </deployables>

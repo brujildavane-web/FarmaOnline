@@ -4,7 +4,7 @@ Pruebas funcionales (caja negra) de FarmaWeb con Selenium WebDriver.
 Requisitos:  pip install selenium   y   Google Chrome instalado.
 Antes de ejecutar:
   1. Iniciar MySQL (XAMPP) y cargar src/main/resources/sql/bd_farmacia_completa.sql
-  2. Levantar la aplicacion:  mvn cargo:run   (http://localhost:8080/farmaweb)
+  2. Levantar la aplicacion:  mvn cargo:run   (http://localhost:8080/FarmaOnline)
 Ejecucion:
   python pruebas_funcionales.py <carpeta_de_evidencia>
 
@@ -25,7 +25,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-BASE = "http://localhost:8080/farmaweb"
+BASE = "http://localhost:8080/FarmaOnline"
 EVIDENCIA = sys.argv[1] if len(sys.argv) > 1 else "evidencia"
 os.makedirs(EVIDENCIA, exist_ok=True)
 
@@ -327,6 +327,95 @@ def c19():
     return "Se avisa 'Falta la fórmula médica' y el botón de confirmar el pedido no está disponible."
 
 
+def nuevo_pedido(termino):
+    agregar_por_busqueda(termino)
+    ir("/carrito")
+    enviar(nav.find_element(By.XPATH, "//button[contains(., 'Confirmar mi pedido')]"))
+    return re.search(r"idPedido=(\d+)", nav.current_url).group(1)
+
+
+def c20():
+    cerrar_sesion()
+    ir("/registro")
+    campos = {"nombre": "Laura", "apellido": "Gomez", "email": "laura.gomez@correo.com",
+              "password": "clave123", "password2": "clave123"}
+    for k, v in campos.items():
+        nav.find_element(By.ID, k).send_keys(v)
+    enviar(nav.find_element(By.CSS_SELECTOR, "form[action$='/registro'] button[type=submit]"))
+    msg = texto_alerta()
+    assert "ya tiene una cuenta" in msg, msg
+    assert nav.current_url.endswith("/registro"), nav.current_url
+    return f"No se crea la cuenta y se muestra: {msg}"
+
+
+def c21():
+    ingresar(CORREO_NUEVO, "nueva456")
+    idp = nuevo_pedido("alcohol")
+    ir(f"/pago?idPedido={idp}")
+    nav.find_element(By.ID, "medio-pse").click()
+    enviar(nav.find_element(By.XPATH, "//button[contains(., 'Registrar el pago')]"))
+    assert "/portal-pse" in nav.current_url, nav.current_url
+    cuerpo = nav.find_element(By.ID, "contenido-principal").text
+    assert "no un pago real" in cuerpo, cuerpo[:200]
+    assert "PENDIENTE" in cuerpo
+    return (f"El pedido {idp} pasa por el portal PSE simulado, que declara que no hay débito real; "
+            "la transacción queda PENDIENTE.")
+
+
+def c22():
+    ingresar(CORREO_NUEVO, "nueva456")
+    idp = nuevo_pedido("paracetamol")
+    ir(f"/mipedido?id={idp}")
+    campo = nav.find_element(By.CSS_SELECTOR, "input[name=cantidad]")
+    campo.clear()
+    campo.send_keys("3")
+    enviar(nav.find_element(By.XPATH, "//button[contains(., 'Actualizar')]"))
+    ir(f"/mipedido?id={idp}")
+    cuerpo = nav.find_element(By.ID, "contenido-principal").text
+    # 3 x 8.500 = 25.500 + IVA 19 % (4.845) = 30.345
+    assert "30.345" in cuerpo, cuerpo[:400]
+    return f"Al pasar de 1 a 3 unidades, el pedido {idp} se recalcula a $30.345 (25.500 más IVA de 4.845)."
+
+
+def c23():
+    ingresar("admin@farmacia.com", "admin123")
+    nombre = f"Producto Ciclo {SUFIJO}"
+    ir("/productos")
+    nav.find_element(By.ID, "nombre").send_keys(nombre)
+    nav.find_element(By.ID, "skuCode").send_keys(f"CIC-{SUFIJO}")
+    nav.find_element(By.ID, "precio").send_keys("10000")
+    enviar(nav.find_element(By.CSS_SELECTOR, "form[action$='/productos'][method=post] button[type=submit]"))
+    assert "registrado" in texto_alerta()
+    # editar
+    fila = nav.find_element(By.XPATH, f"//tr[contains(., '{nombre}')]")
+    enviar(fila.find_element(By.LINK_TEXT, "Editar"))
+    precio = nav.find_element(By.ID, "precio")
+    precio.clear()
+    precio.send_keys("15000")
+    enviar(nav.find_element(By.CSS_SELECTOR, "form[action$='/productos'][method=post] button[type=submit]"))
+    msg_edit = texto_alerta()
+    assert "actualizado" in msg_edit, msg_edit
+    assert "15.000" in nav.find_element(By.XPATH, f"//tr[contains(., '{nombre}')]").text
+    foto_intermedia = foto(23)
+    # eliminar
+    fila = nav.find_element(By.XPATH, f"//tr[contains(., '{nombre}')]")
+    fila.find_element(By.LINK_TEXT, "Eliminar").click()
+    nav.switch_to.alert.accept()
+    time.sleep(1)
+    msg_del = texto_alerta()
+    assert "eliminado" in msg_del, msg_del
+    assert nombre not in nav.page_source
+    return ("El producto se crea, se edita (precio de $10.000 a $15.000) y se elimina; "
+            f"cada operación se refleja en el listado ({msg_del})")
+
+
+def c24():
+    cerrar_sesion()
+    ir("/notificaciones")
+    assert nav.current_url.endswith("/login"), nav.current_url
+    return "Un visitante sin sesión que pide /notificaciones es llevado a la pantalla de ingreso."
+
+
 CASOS = [
     ("Inicio de sesión de administrador", c1),
     ("Inicio de sesión con contraseña incorrecta", c2),
@@ -347,6 +436,11 @@ CASOS = [
     ("Cancelación de un pedido por el cliente", c17),
     ("Diseño adaptable en pantallas pequeñas", c18),
     ("Medicamento controlado sin fórmula médica", c19),
+    ("Registro con un correo que ya existe", c20),
+    ("Pago del pedido con PSE (portal simulado)", c21),
+    ("Edición de la cantidad de un pedido pendiente", c22),
+    ("Crear, editar y eliminar un producto", c23),
+    ("Acceso sin sesión a las notificaciones", c24),
 ]
 
 try:
